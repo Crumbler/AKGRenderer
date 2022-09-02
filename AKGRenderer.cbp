@@ -5,6 +5,7 @@
 		<Option title="AKGRenderer" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
+		<Option virtualFolders="glad/;ImGui/" />
 		<Build>
 			<Target title="Debug">
 				<Option output="bin/Debug/AKGRenderer" prefix_auto="1" extension_auto="1" />
@@ -18,7 +19,7 @@
 			<Target title="Release">
 				<Option output="bin/Release/AKGRenderer" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release/" />
-				<Option type="1" />
+				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
@@ -30,8 +31,61 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add option="-std=gnu++17" />
+			<Add option="-fPIC" />
+			<Add option="-m64" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Linker>
+			<Add option="-static-libstdc++" />
+			<Add option="-static-libgcc" />
+			<Add option="-static" />
+			<Add option="-m64" />
+			<Add library="glfw3" />
+			<Add library="opengl32" />
+			<Add library="gdi32" />
+			<Add library="comdlg32" />
+		</Linker>
+		<Unit filename="glad.c">
+			<Option compilerVar="CC" />
+			<Option virtualFolder="glad/" />
+		</Unit>
+		<Unit filename="imgui/imconfig.h">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
+		<Unit filename="imgui/imgui.cpp">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
+		<Unit filename="imgui/imgui.h">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
+		<Unit filename="imgui/imgui_demo.cpp">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
+		<Unit filename="imgui/imgui_draw.cpp" />
+		<Unit filename="imgui/imgui_impl_glfw.cpp">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
+		<Unit filename="imgui/imgui_impl_glfw.h">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
+		<Unit filename="imgui/imgui_impl_opengl3.cpp">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
+		<Unit filename="imgui/imgui_impl_opengl3.h">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
+		<Unit filename="imgui/imgui_impl_opengl3_loader.h">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
+		<Unit filename="imgui/imgui_internal.h">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
+		<Unit filename="imgui/imgui_tables.cpp" />
+		<Unit filename="imgui/imgui_widgets.cpp" />
+		<Unit filename="imgui/imstb_rectpack.h" />
+		<Unit filename="imgui/imstb_textedit.h" />
+		<Unit filename="imgui/imstb_truetype.h" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />

@@ -7,6 +7,8 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
+constexpr int initialWidth = 1280, initialHeight = 720;
+
 ImGuiIO *io;
 
 void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
@@ -41,6 +43,8 @@ void OnScroll(GLFWwindow* window, double xoffset, double yoffset)
 
 void OnDisplay(GLFWwindow* window)
 {
+    glClear(GL_COLOR_BUFFER_BIT);
+
     ImGui::Render();
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -50,29 +54,31 @@ void OnDisplay(GLFWwindow* window)
 
 void OnSize(GLFWwindow* window, int width, int height)
 {
-    glViewport(0, 0, width, height);
+
 }
 
 void OnFramebufferSize(GLFWwindow* window, int width, int height)
 {
-
+    glViewport(0, 0, width, height);
 }
 
 void GUI_Main(GLFWwindow *window)
 {
-    ImGui::Begin("MainWindow", nullptr,
-                 ImGuiWindowFlags_NoMove |
-                 ImGuiWindowFlags_NoResize |
-                 ImGuiWindowFlags_NoCollapse |
-                 ImGuiWindowFlags_NoTitleBar |
-                 ImGuiWindowFlags_MenuBar);
+    ImGui::Begin("MainWindow", nullptr, 0);
+
+    ImGui::Text("Hello");
 
     ImGui::End();
 }
 
-void OnInit()
+void OnInit(GLFWwindow *window)
 {
     io->IniFilename = nullptr;
+
+    int width, height;
+
+    glfwGetFramebufferSize(window, &width, &height);
+    glViewport(0, 0, width, height);
 }
 
 void OnUpdate(GLFWwindow *window)
@@ -101,7 +107,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(1280, 720,
+    window = glfwCreateWindow(initialWidth, initialHeight,
                               "DLAGL", nullptr, nullptr);
     if (!window)
     {
@@ -135,7 +141,7 @@ int main()
     glfwSetWindowSizeCallback(window, OnSize);
     glfwSetFramebufferSizeCallback(window, OnFramebufferSize);
 
-    OnInit();
+    OnInit(window);
 
     while (!glfwWindowShouldClose(window))
     {

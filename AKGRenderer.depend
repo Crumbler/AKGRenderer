@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1662027607 source:d:\my projects\akgrenderer\main.cpp
+1662060083 source:d:\my projects\akgrenderer\main.cpp
 	<cstdio>
 	<glad/glad.h>
 	<GLFW/glfw3.h>
