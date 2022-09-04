@@ -5,7 +5,7 @@
 		<Option title="AKGRenderer" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
-		<Option virtualFolders="glad/;ImGui/" />
+		<Option virtualFolders="glad/;ImGui/;OpenGL Shaders/;OpenGL Headers/;OpenGL Sources/" />
 		<Build>
 			<Target title="Debug">
 				<Option output="bin/Debug/AKGRenderer" prefix_auto="1" extension_auto="1" />
@@ -14,6 +14,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add directory="include" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -23,6 +24,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add directory="include" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -62,7 +64,9 @@
 		<Unit filename="imgui/imgui_demo.cpp">
 			<Option virtualFolder="ImGui/" />
 		</Unit>
-		<Unit filename="imgui/imgui_draw.cpp" />
+		<Unit filename="imgui/imgui_draw.cpp">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
 		<Unit filename="imgui/imgui_impl_glfw.cpp">
 			<Option virtualFolder="ImGui/" />
 		</Unit>
@@ -81,12 +85,70 @@
 		<Unit filename="imgui/imgui_internal.h">
 			<Option virtualFolder="ImGui/" />
 		</Unit>
-		<Unit filename="imgui/imgui_tables.cpp" />
-		<Unit filename="imgui/imgui_widgets.cpp" />
-		<Unit filename="imgui/imstb_rectpack.h" />
-		<Unit filename="imgui/imstb_textedit.h" />
-		<Unit filename="imgui/imstb_truetype.h" />
+		<Unit filename="imgui/imgui_tables.cpp">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
+		<Unit filename="imgui/imgui_widgets.cpp">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
+		<Unit filename="imgui/imstb_rectpack.h">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
+		<Unit filename="imgui/imstb_textedit.h">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
+		<Unit filename="imgui/imstb_truetype.h">
+			<Option virtualFolder="ImGui/" />
+		</Unit>
+		<Unit filename="include/Color.hpp" />
+		<Unit filename="include/DisplayShader.hpp">
+			<Option virtualFolder="OpenGL Headers/" />
+		</Unit>
+		<Unit filename="include/GLDisplayModel.hpp">
+			<Option virtualFolder="OpenGL Headers/" />
+		</Unit>
+		<Unit filename="include/GLLoader.hpp">
+			<Option virtualFolder="OpenGL Headers/" />
+		</Unit>
+		<Unit filename="include/GLRawModel.hpp">
+			<Option virtualFolder="OpenGL Headers/" />
+		</Unit>
+		<Unit filename="include/GLRenderer.hpp">
+			<Option virtualFolder="OpenGL Headers/" />
+		</Unit>
+		<Unit filename="include/Renderer.hpp" />
+		<Unit filename="include/ShaderInfo.hpp">
+			<Option virtualFolder="OpenGL Headers/" />
+		</Unit>
+		<Unit filename="include/ShaderProgram.hpp">
+			<Option virtualFolder="OpenGL Headers/" />
+		</Unit>
 		<Unit filename="main.cpp" />
+		<Unit filename="shaders/fDisplayShader.txt">
+			<Option virtualFolder="OpenGL Shaders/" />
+		</Unit>
+		<Unit filename="shaders/vDisplayShader.txt">
+			<Option virtualFolder="OpenGL Shaders/" />
+		</Unit>
+		<Unit filename="src/DisplayShader.cpp">
+			<Option virtualFolder="OpenGL Sources/" />
+		</Unit>
+		<Unit filename="src/GLDisplayModel.cpp">
+			<Option virtualFolder="OpenGL Sources/" />
+		</Unit>
+		<Unit filename="src/GLLoader.cpp">
+			<Option virtualFolder="OpenGL Sources/" />
+		</Unit>
+		<Unit filename="src/GLRawModel.cpp">
+			<Option virtualFolder="OpenGL Sources/" />
+		</Unit>
+		<Unit filename="src/GLRenderer.cpp">
+			<Option virtualFolder="OpenGL Sources/" />
+		</Unit>
+		<Unit filename="src/Renderer.cpp" />
+		<Unit filename="src/ShaderProgram.cpp">
+			<Option virtualFolder="OpenGL Sources/" />
+		</Unit>
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

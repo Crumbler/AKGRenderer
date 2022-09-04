@@ -7,7 +7,15 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
+#include "Color.hpp"
+#include "GLRenderer.hpp"
+#include "Renderer.hpp"
+
 constexpr int initialWidth = 1280, initialHeight = 720;
+
+Renderer renderer;
+int frWidth, frHeight;
+bool sizeChanged = false;
 
 ImGuiIO *io;
 
@@ -43,7 +51,9 @@ void OnScroll(GLFWwindow* window, double xoffset, double yoffset)
 
 void OnDisplay(GLFWwindow* window)
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    GLRenderer::Prepare();
+
+    GLRenderer::Render();
 
     ImGui::Render();
 
@@ -60,13 +70,26 @@ void OnSize(GLFWwindow* window, int width, int height)
 void OnFramebufferSize(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
+
+    if (width != frWidth || height != frHeight)
+    {
+        sizeChanged = true;
+    }
+
+    frWidth = width;
+    frHeight = height;
 }
 
 void GUI_Main(GLFWwindow *window)
 {
-    ImGui::Begin("MainWindow", nullptr, 0);
+    ImGui::Begin("Main window", nullptr, 0);
 
-    ImGui::Text("Hello");
+    if (ImGui::Button("Render"))
+    {
+        const void *ptr = renderer.Render(frWidth, frHeight, sizeChanged);
+        GLRenderer::UpdateDisplay(frWidth, frHeight, ptr, sizeChanged);
+        sizeChanged = false;
+    }
 
     ImGui::End();
 }
@@ -75,10 +98,12 @@ void OnInit(GLFWwindow *window)
 {
     io->IniFilename = nullptr;
 
-    int width, height;
+    glfwGetFramebufferSize(window, &frWidth, &frHeight);
+    glViewport(0, 0, frWidth, frHeight);
 
-    glfwGetFramebufferSize(window, &width, &height);
-    glViewport(0, 0, width, height);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    GLRenderer::Init(frWidth, frHeight);
 }
 
 void OnUpdate(GLFWwindow *window)
@@ -93,7 +118,7 @@ void OnUpdate(GLFWwindow *window)
 
 void OnExit()
 {
-
+    GLRenderer::CleanUp();
 }
 
 int main()
