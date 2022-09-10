@@ -11,6 +11,7 @@ class Renderer
 
     private:
         int index(int i, int j) const;
+        void drawLine(float x0, float y0, float x1, float y1);
 
         Color *buffer;
         int width, height;
