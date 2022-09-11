@@ -48,7 +48,6 @@ void GLRenderer::UpdateDisplay(int width, int height, const void *data, bool siz
     loader.updateTexture(texId, width, height, data, sizeChanged);
 }
 
-
 void GLRenderer::CleanUp()
 {
     loader.CleanUp();
