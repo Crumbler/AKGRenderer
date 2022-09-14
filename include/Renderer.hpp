@@ -13,7 +13,8 @@ class Renderer
         void LoadModel(const std::string& filename);
 
         float FOV;
-        glm::vec3 camPos;
+        glm::vec3 camPos, modelScale,
+            modelPos, modelRot;
 
     private:
         int index(int i, int j) const;
@@ -25,8 +26,9 @@ class Renderer
         void genProjectionMatrix();
         void genViewportMatrix();
         void genViewMatrix();
+        void genModelMatrix();
 
-        glm::mat4 viewMat, projMat, viewportMat;
+        glm::mat4 modelMat, viewMat, projMat, viewportMat, viewProjMat;
         Color *buffer;
         int width, height;
         Model *model;

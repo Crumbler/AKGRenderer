@@ -5,8 +5,7 @@
 #include <algorithm>
 
 #include <glm/ext.hpp>
-
-#include "Global.hpp"
+#include <glm/gtx/euler_angles.hpp>
 
 Renderer::Renderer()
 {
@@ -15,6 +14,7 @@ Renderer::Renderer()
 
     FOV = 90.0f;
     camPos = glm::vec3(0.0f, 0.0f, 1.0f);
+    modelScale = glm::vec3(1.0f);
 }
 
 const void* Renderer::Render(int width, int height, bool sizeChanged)
@@ -27,6 +27,9 @@ const void* Renderer::Render(int width, int height, bool sizeChanged)
     genProjectionMatrix();
     genViewportMatrix();
     genViewMatrix();
+    genModelMatrix();
+
+    viewProjMat = projMat * viewMat;
 
     if (sizeChanged && buffer != nullptr)
     {
@@ -48,9 +51,9 @@ const void* Renderer::Render(int width, int height, bool sizeChanged)
 
 void Renderer::drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c)
 {
-    a = projMat * viewMat * a;
-    b = projMat * viewMat * b;
-    c = projMat * viewMat * c;
+    a = viewProjMat * modelMat * a;
+    b = viewProjMat * modelMat * b;
+    c = viewProjMat * modelMat * c;
 
     a /= a.w;
     b /= b.w;
@@ -70,6 +73,26 @@ void Renderer::drawLine(glm::vec4 a, glm::vec4 b)
     drawLine(a.x, a.y, b.x, b.y);
 }
 
+void Renderer::genModelMatrix()
+{
+    using glm::mat4;
+
+    const mat4 trMat(1.0f, 0.0f, 0.0f, 0.0f,
+                     0.0f, 1.0f, 0.0f, 0.0f,
+                     0.0f, 0.0f, 1.0f, 0.0f,
+                     modelPos.x, modelPos.y, modelPos.z, 1.0f);
+
+    const glm::vec3 rot = glm::radians(modelRot);
+    const mat4 rotMat = glm::eulerAngleXYZ(rot.x, rot.y, rot.z);
+
+    mat4 scaleMat(modelScale.x, 0.0f, 0.0f, 0.0f,
+                  0.0f, modelScale.y, 0.0f, 0.0f,
+                  0.0f, 0.0f, modelScale.z, 0.0f,
+                  0.0f, 0.0f, 0.0f, 1.0f);
+
+    modelMat = trMat * rotMat * scaleMat;
+}
+
 void Renderer::genProjectionMatrix()
 {
     const float fov = glm::radians(this->FOV),
@@ -85,7 +108,20 @@ void Renderer::genProjectionMatrix()
 
 void Renderer::genViewMatrix()
 {
-    viewMat = glm::lookAt(Global::camPos, glm::vec3(), glm::vec3(0.0f, 1.0f, 0.0f));
+    using glm::vec3;
+
+    const vec3 up = vec3(0.0f, 1.0f, 0.0f),
+        eye = camPos,
+        target = vec3(0.0f),
+        zAxis = glm::normalize(eye - target),
+        xAxis = glm::normalize(glm::cross(up, zAxis)),
+        yAxis = up;
+
+    viewMat = glm::mat4(xAxis.x, yAxis.x, zAxis.x, 0.0f,
+                        xAxis.y, yAxis.y, zAxis.y, 0.0f,
+                        xAxis.z, yAxis.z, zAxis.z, 0.0f,
+                        -glm::dot(xAxis, eye), -glm::dot(yAxis, eye),
+                        -glm::dot(zAxis, eye), 1.0f);
 }
 
 void Renderer::renderModel()
@@ -97,9 +133,9 @@ void Renderer::renderModel()
 
     for (const auto p : model->polygons)
     {
-        drawTriangle(model->vertices[p[0] - 1],
-                     model->vertices[p[1] - 1],
-                     model->vertices[p[2] - 1]);
+        drawTriangle(model->vertices[p[0]],
+                     model->vertices[p[1]],
+                     model->vertices[p[2]]);
     }
 }
 
@@ -107,17 +143,16 @@ void Renderer::genViewportMatrix()
 {
     using glm::vec4;
 
-    viewportMat[0] = vec4(width / 2.0f, 0.0f, 0.0f, 0.0f);
-    viewportMat[1] = vec4(0.0f, -height / 2.0f, 0.0f, 0.0f);
-    viewportMat[2] = vec4(0.0f, 0.0f, 1.0f, 0.0f);
-    viewportMat[3] = vec4(width / 2.0f, height / 2.0f, 0.0f, 1.0f);
+    viewportMat = glm::mat4(width / 2.0f, 0.0f, 0.0f, 0.0f,
+                            0.0f, -height / 2.0f, 0.0f, 0.0f,
+                            0.0f, 0.0f, 1.0f, 0.0f,
+                            width / 2.0f, height / 2.0f, 0.0f, 1.0f);
 }
 
 void Renderer::LoadModel(const std::string& filename)
 {
     model = new Model(filename);
 }
-
 
 void Renderer::drawLine(float x0, float y0, float x1, float y1)
 {

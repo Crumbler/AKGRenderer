@@ -7,7 +7,6 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
-#include "Global.hpp"
 #include "Color.hpp"
 #include "GLRenderer.hpp"
 #include "Renderer.hpp"
@@ -99,7 +98,13 @@ void GUI_Main(GLFWwindow *window)
 
     ImGui::SliderFloat("FOV", &renderer.FOV, 0.0f, 180.0f);
 
-    ImGui::SliderFloat3("Camera pos", &Global::camPos.x, -2.0f, 2.0f);
+    ImGui::SliderFloat3("Camera pos", &renderer.camPos.x, -2.0f, 2.0f);
+
+    ImGui::SliderFloat3("Model pos", &renderer.modelPos.x, -2.0f, 2.0f);
+
+    ImGui::SliderFloat3("Model rotation", &renderer.modelRot.x, -180.0f, 180.0f);
+
+    ImGui::SliderFloat3("Model scale", &renderer.modelScale.x, 0.5f, 2.0f);
 
     ImGui::End();
 }

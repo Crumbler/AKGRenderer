@@ -117,7 +117,6 @@
 		<Unit filename="include/GLRenderer.hpp">
 			<Option virtualFolder="OpenGL Headers/" />
 		</Unit>
-		<Unit filename="include/Global.hpp" />
 		<Unit filename="include/Model.hpp" />
 		<Unit filename="include/Renderer.hpp" />
 		<Unit filename="include/ShaderInfo.hpp">
@@ -148,7 +147,6 @@
 		<Unit filename="src/GLRenderer.cpp">
 			<Option virtualFolder="OpenGL Sources/" />
 		</Unit>
-		<Unit filename="src/Global.cpp" />
 		<Unit filename="src/Model.cpp" />
 		<Unit filename="src/Renderer.cpp" />
 		<Unit filename="src/ShaderProgram.cpp">
