@@ -32,6 +32,12 @@ Model::Model(const std::string& filename)
             loadFace(file);
         }
 
+        if (!file)
+        {
+            printf("Model parsing failed\n");
+            break;
+        }
+
         std::getline(file, s);
     }
 
@@ -39,18 +45,18 @@ Model::Model(const std::string& filename)
 
     adjustIndices();
 
-    printf("Model loaded. Vertices: %d Polygons: %d\n", vCount, fCount);
+    printf("Loaded model. Vertices: %d, faces: %d\n", vCount, fCount);
 }
 
 void Model::adjustIndices()
 {
-    const int sz = polygons.size();
+    const int sz = vertices.size();
 
     for (glm::ivec3& p : polygons)
     {
         for (int i = 0; i < 3; ++i)
         {
-            p[i] = p[i] > 0 ? p[i] - 1 : sz - p[i];
+            p[i] = p[i] > 0 ? p[i] - 1 : sz + p[i];
         }
     }
 }
@@ -107,8 +113,20 @@ void Model::loadFace(std::ifstream& file)
         normals.push_back(n);
     }
 
-    // quad face
+    bool hasFourthVertex = false;
     if (file.peek() == ' ')
+    {
+        char c;
+        file.get(c);
+    }
+
+    if (file.peek() != '\n')
+    {
+        hasFourthVertex = true;
+    }
+
+    // quad face
+    if (hasFourthVertex)
     {
         a = loadFaceVertex(file);
 
@@ -137,6 +155,36 @@ glm::ivec3 Model::loadFaceVertex(std::ifstream& file)
     char c;
 
     file >> v[0];
+
+    if (file.peek() == '/')
+    {
+        file >> c;
+    }
+
+    if (file.peek() == '/')
+    {
+        file >> c;
+    }
+    else
+    {
+        file >> v[1];
+    }
+
+    if (file.peek() == '/')
+    {
+        file >> c >> v[2];
+    }
+
+    return v;
+}
+
+glm::ivec3 Model::loadFaceVertex(std::ifstream& file, int n1)
+{
+    // vertex, texture, normal indices
+    glm::ivec3 v(0);
+    char c;
+
+    v[0] = n1;
 
     if (file.peek() == '/')
     {

@@ -16,6 +16,7 @@ class Model
 
     private:
         glm::ivec3 loadFaceVertex(std::ifstream& file);
+        glm::ivec3 loadFaceVertex(std::ifstream& file, int n1);
         void loadVertex(std::ifstream& file);
         void loadFace(std::ifstream& file);
         void adjustIndices();

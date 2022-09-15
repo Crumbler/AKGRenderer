@@ -93,7 +93,7 @@ void GUI_Main(GLFWwindow *window)
 
     if (ImGui::Button("Load model"))
     {
-        renderer.LoadModel("craneo.OBJ");
+        renderer.LoadModel("model.obj");
     }
 
     ImGui::SliderFloat("FOV", &renderer.FOV, 0.0f, 180.0f);
@@ -104,7 +104,7 @@ void GUI_Main(GLFWwindow *window)
 
     ImGui::SliderFloat3("Model rotation", &renderer.modelRot.x, -180.0f, 180.0f);
 
-    ImGui::SliderFloat3("Model scale", &renderer.modelScale.x, 0.5f, 2.0f);
+    ImGui::SliderFloat3("Model scale", &renderer.modelScale.x, 0.03f, 1.0f);
 
     ImGui::End();
 }
