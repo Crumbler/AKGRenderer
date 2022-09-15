@@ -63,6 +63,8 @@ void Renderer::drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c)
     b = viewportMat * b;
     c = viewportMat * c;
 
+    glm::vec3 zs = glm::abs(glm::vec3(a.z, b.z, c.z));
+
     drawLine(a, b);
     drawLine(a, c);
     drawLine(b, c);
@@ -70,6 +72,11 @@ void Renderer::drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c)
 
 void Renderer::drawLine(glm::vec4 a, glm::vec4 b)
 {
+    if (std::max(std::abs(a.z), std::abs(b.z)) > 1.0f)
+    {
+        return;
+    }
+
     drawLine(a.x, a.y, b.x, b.y);
 }
 
