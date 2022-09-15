@@ -21,7 +21,10 @@ class Renderer
         void drawLine(float x0, float y0, float x1, float y1);
         void drawLine(glm::vec4 a, glm::vec4 b);
         void drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c);
+        void drawTopTriangle(glm::vec2 a, glm::vec2 b, glm::vec2 c);
+        void drawBottomTriangle(glm::vec2 a, glm::vec2 b, glm::vec2 c);
         void renderModel();
+        void setPixel(const int x, const int y, const Color c);
 
         void genProjectionMatrix();
         void genViewportMatrix();

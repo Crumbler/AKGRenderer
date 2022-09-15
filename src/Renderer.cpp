@@ -46,11 +46,17 @@ const void* Renderer::Render(int width, int height, bool sizeChanged)
 
     renderModel();
 
+    //drawTriangle(glm::vec4(-1.0f, 0.0f, 0.0f, 1.0f),
+    //             glm::vec4(0.0f, -1.0f, 0.0f, 1.0f),
+    //             glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+
     return buffer;
 }
 
 void Renderer::drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c)
 {
+    using std::swap;
+
     a = viewProjMat * modelMat * a;
     b = viewProjMat * modelMat * b;
     c = viewProjMat * modelMat * c;
@@ -64,10 +70,109 @@ void Renderer::drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c)
     c = viewportMat * c;
 
     glm::vec3 zs = glm::abs(glm::vec3(a.z, b.z, c.z));
+    if (zs.x > 1.0f || zs.y > 1.0f || zs.z > 1.0f)
+    {
+        return;
+    }
 
-    drawLine(a, b);
-    drawLine(a, c);
-    drawLine(b, c);
+    if (a.y > b.y)
+    {
+        swap(a, b);
+    }
+
+    if (b.y > c.y)
+    {
+        swap(b, c);
+    }
+
+    if (a.y > b.y)
+    {
+        swap(a, b);
+    }
+
+    if (a.y == b.y)
+    {
+        // natural bottom triangle
+        if (a.x > b.x)
+        {
+            swap(a, b);
+        }
+        drawBottomTriangle(a, b, c);
+    }
+    else if (b.y == c.y)
+    {
+        // natural top triangle
+        if (b.x > c.x)
+        {
+            swap(b, c);
+        }
+        drawTopTriangle(a, b, c);
+    }
+    else // general triangle
+    {
+        const float ratio = (b.y - a.y) / (c.y - a.y);
+
+        const glm::vec2 newV = a + (c - a) * ratio;
+
+        if (b.x < newV.x)
+        {
+            // new vertex on the right edge
+            drawTopTriangle(a, b, newV);
+            drawBottomTriangle(b, newV, c);
+        }
+        else
+        {
+            // new vertex on the left edge
+            drawTopTriangle(a, newV, b);
+            drawBottomTriangle(newV, b, c);
+        }
+    }
+}
+
+void Renderer::drawTopTriangle(glm::vec2 a, glm::vec2 b, glm::vec2 c)
+{
+    const float mLeft = (b.x - a.x) / (b.y - a.y),
+        mRight = (c.x - a.x) / (c.y - a.y);
+
+    const int yStart = std::ceil(a.y - 0.5f),
+        yEnd = std::ceil(c.y - 0.5f);
+
+    for (int y = yStart; y < yEnd; ++y)
+    {
+        int xStart = mLeft * (y - a.y + 0.5f) + a.x,
+            xEnd = mRight * (y - a.y + 0.5f) + a.x;
+
+        xStart = std::ceil(xStart - 0.5f);
+        xEnd = std::ceil(xEnd - 0.5f);
+
+        for (int x = xStart; x < xEnd; ++x)
+        {
+            setPixel(x, y, Color::white());
+        }
+    }
+}
+
+void Renderer::drawBottomTriangle(glm::vec2 a, glm::vec2 b, glm::vec2 c)
+{
+    const float mLeft = (c.x - a.x) / (c.y - a.y),
+        mRight = (c.x - b.x) / (c.y - b.y);
+
+    const int yStart = std::ceil(a.y - 0.5f),
+        yEnd = std::ceil(c.y - 0.5f);
+
+    for (int y = yStart; y < yEnd; ++y)
+    {
+        int xStart = mLeft * (y - a.y + 0.5f) + a.x,
+            xEnd = mRight * (y - a.y + 0.5f) + b.x;
+
+        xStart = std::ceil(xStart - 0.5f);
+        xEnd = std::ceil(xEnd - 0.5f);
+
+        for (int x = xStart; x < xEnd; ++x)
+        {
+            setPixel(x, y, Color::white());
+        }
+    }
 }
 
 void Renderer::drawLine(glm::vec4 a, glm::vec4 b)
@@ -78,6 +183,16 @@ void Renderer::drawLine(glm::vec4 a, glm::vec4 b)
     }
 
     drawLine(a.x, a.y, b.x, b.y);
+}
+
+void Renderer::setPixel(const int x, const int y, const Color c)
+{
+    if (x < 0 || x >= width || y < 0 || y >= height)
+    {
+        return;
+    }
+
+    buffer[index(y, x)] = c;
 }
 
 void Renderer::genModelMatrix()
@@ -178,7 +293,7 @@ void Renderer::drawLine(float x0, float y0, float x1, float y1)
             continue;
         }
 
-        buffer[index(y0, x0)] = Color::white();
+        setPixel(x0, y0, Color::white());
     }
 }
 
