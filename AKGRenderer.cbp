@@ -105,6 +105,7 @@
 		<Unit filename="include/DisplayShader.hpp">
 			<Option virtualFolder="OpenGL Headers/" />
 		</Unit>
+		<Unit filename="include/Face.hpp" />
 		<Unit filename="include/GLDisplayModel.hpp">
 			<Option virtualFolder="OpenGL Headers/" />
 		</Unit>
@@ -135,6 +136,7 @@
 		<Unit filename="src/DisplayShader.cpp">
 			<Option virtualFolder="OpenGL Sources/" />
 		</Unit>
+		<Unit filename="src/Face.cpp" />
 		<Unit filename="src/GLDisplayModel.cpp">
 			<Option virtualFolder="OpenGL Sources/" />
 		</Unit>
