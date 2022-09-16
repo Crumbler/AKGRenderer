@@ -13,17 +13,27 @@ Model::Model(const std::string& filename)
     }
 
     std::string s;
-    int vCount = 0, fCount = 0;
+    int vCount = 0, fCount = 0, tCount = 0, nCount = 0;
 
-    while (!file.eof())
+    while (file >> s)
     {
-        file >> s;
-
         if (s == "v")
         {
             ++vCount;
 
             loadVertex(file);
+        }
+        else if (s == "vt")
+        {
+            ++tCount;
+
+            loadTextureCoords(file);
+        }
+        else if (s == "vn")
+        {
+            ++nCount;
+
+            loadNormal(file);
         }
         else if (s == "f")
         {
@@ -46,16 +56,18 @@ Model::Model(const std::string& filename)
     adjustIndices();
 
     printf("Loaded model. Vertices: %d, faces: %d\n", vCount, fCount);
+    printf("Texture coords: %d, normals: %d\n", tCount, nCount);
 }
 
 void Model::adjustIndices()
 {
     const int sz = vertices.size();
 
-    for (glm::ivec3& p : polygons)
+    for (Face& f : faces)
     {
         for (int i = 0; i < 3; ++i)
         {
+            glm::ivec3& p = f.vertices;
             p[i] = p[i] > 0 ? p[i] - 1 : sz + p[i];
         }
     }
@@ -101,17 +113,7 @@ void Model::loadFace(std::ifstream& file)
     t[2] = a[1];
     n[2] = a[2];
 
-    polygons.push_back(v);
-
-    if (t[0] != 0)
-    {
-        uvs.push_back(t);
-    }
-
-    if (n[0] != 0)
-    {
-        normals.push_back(n);
-    }
+    faces.push_back(Face(v, t, n));
 
     bool hasFourthVertex = false;
     if (file.peek() == ' ')
@@ -134,17 +136,7 @@ void Model::loadFace(std::ifstream& file)
         t[0] = a[1];
         n[0] = a[2];
 
-        polygons.push_back(v);
-
-        if (t[0] != 0)
-        {
-            uvs.push_back(t);
-        }
-
-        if (n[0] != 0)
-        {
-            normals.push_back(n);
-        }
+        faces.push_back(Face(v, t, n));
     }
 }
 
@@ -178,32 +170,20 @@ glm::ivec3 Model::loadFaceVertex(std::ifstream& file)
     return v;
 }
 
-glm::ivec3 Model::loadFaceVertex(std::ifstream& file, int n1)
+void Model::loadTextureCoords(std::ifstream& file)
 {
-    // vertex, texture, normal indices
-    glm::ivec3 v(0);
-    char c;
+    glm::vec2 t;
 
-    v[0] = n1;
+    file >> t.x >> t.y;
 
-    if (file.peek() == '/')
-    {
-        file >> c;
-    }
+    uvs.push_back(t);
+}
 
-    if (file.peek() == '/')
-    {
-        file >> c;
-    }
-    else
-    {
-        file >> v[1];
-    }
+void Model::loadNormal(std::ifstream& file)
+{
+    glm::vec3 n;
 
-    if (file.peek() == '/')
-    {
-        file >> c >> v[2];
-    }
+    file >> n.x >> n.y >> n.z;
 
-    return v;
+    normals.push_back(n);
 }

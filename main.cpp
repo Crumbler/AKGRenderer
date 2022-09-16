@@ -98,9 +98,9 @@ void GUI_Main(GLFWwindow *window)
 
     ImGui::SliderFloat("FOV", &renderer.FOV, 0.0f, 180.0f);
 
-    ImGui::SliderFloat3("Camera pos", &renderer.camPos.x, -2.0f, 2.0f);
+    ImGui::SliderFloat3("Camera pos", &renderer.camPos.x, -5.0f, 5.0f);
 
-    ImGui::SliderFloat3("Model pos", &renderer.modelPos.x, -2.0f, 2.0f);
+    ImGui::SliderFloat3("Model pos", &renderer.modelPos.x, -5.0f, 5.0f);
 
     ImGui::SliderFloat3("Model rotation", &renderer.modelRot.x, -180.0f, 180.0f);
 

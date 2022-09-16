@@ -249,11 +249,11 @@ void Renderer::renderModel()
         return;
     }
 
-    for (const auto p : model->polygons)
+    for (const auto f : model->faces)
     {
-        drawTriangle(model->vertices[p[0]],
-                     model->vertices[p[1]],
-                     model->vertices[p[2]]);
+        drawTriangle(model->vertices[f.vertices[0]],
+                     model->vertices[f.vertices[1]],
+                     model->vertices[f.vertices[2]]);
     }
 }
 
