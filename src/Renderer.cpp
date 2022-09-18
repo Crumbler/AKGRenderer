@@ -13,6 +13,8 @@ Renderer::Renderer()
     zBuffer = nullptr;
     model = nullptr;
 
+    backfaceCulling = false;
+
     FOV = 90.0f;
     camPos = glm::vec3(0.0f, 0.0f, 1.0f);
     modelScale = glm::vec3(1.0f);
@@ -29,8 +31,6 @@ const void* Renderer::Render(int width, int height, bool sizeChanged)
     genViewportMatrix();
     genViewMatrix();
     genModelMatrix();
-
-    viewProjMat = projMat * viewMat;
 
     if (sizeChanged && buffer != nullptr)
     {
@@ -51,7 +51,11 @@ const void* Renderer::Render(int width, int height, bool sizeChanged)
         zBuffer[i] = 1.0f;
     }
 
+    culledFaces = 0;
+
     renderModel();
+
+    printf("Culled faces: %d\n", culledFaces);
 
     return buffer;
 }
@@ -64,9 +68,19 @@ void Renderer::drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c, Color col)
     b = modelMat * b;
     c = modelMat * c;
 
-    a = viewProjMat * a;
-    b = viewProjMat * b;
-    c = viewProjMat * c;
+    a = viewMat * a;
+    b = viewMat * b;
+    c = viewMat * c;
+
+    if (backfaceCulling && canCull(a, b, c))
+    {
+        ++culledFaces;
+        return;
+    }
+
+    a = projMat * a;
+    b = projMat * b;
+    c = projMat * c;
 
     a /= a.w;
     b /= b.w;
@@ -138,15 +152,15 @@ void Renderer::drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c, Color col)
 
 void Renderer::drawTopTriangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, Color col)
 {
-    const float mLeft = (b.x - a.x) / (b.y - a.y),
+    const float mLeft = (b.x - a.x) / (c.y - a.y),
         mRight = (c.x - a.x) / (c.y - a.y);
 
-    glm::vec3 brLeft(0.0f, 1.0f, 0.0f),
+    glm::vec3 brLeft(1.0f, 0.0f, 0.0f),
         brTop(1.0f, 0.0f, 0.0f),
-        brRight(0.0f, 0.0f, 1.0f);
+        brRight(1.0f, 0.0f, 0.0f);
 
-    const glm::vec3 brStepLeft = (brLeft - brTop) / (b.y - a.y),
-        brStepRight = (brRight - brTop) / (c.y - a.y);
+    const glm::vec3 brStepLeft = glm::vec3(-1.0f, 1.0f, 0.0f) / (c.y - a.y),
+        brStepRight = glm::vec3(-1.0f, 0.0f, 1.0f) / (c.y - a.y);
 
     const int yStart = std::ceil(a.y - 0.5f),
         yEnd = std::ceil(c.y - 0.5f);
@@ -190,7 +204,7 @@ void Renderer::drawBottomTriangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, Color c
         brRight(0.0f, 1.0f, 0.0f);
 
     const glm::vec3 brStepLeft = (brBottom - brLeft) / (c.y - a.y),
-        brStepRight = (brBottom - brRight) / (c.y - b.y);
+        brStepRight = (brBottom - brRight) / (c.y - a.y);
 
     const int yStart = std::ceil(a.y - 0.5f),
         yEnd = std::ceil(c.y - 0.5f);
@@ -312,7 +326,7 @@ void Renderer::renderModel()
     {
         const Face& f = model->faces[i];
 
-        Color col(128 + i % 64);
+        Color col(128 + i % 128);
 
         drawTriangle(model->vertices[f.vertices[0]],
                      model->vertices[f.vertices[1]],
@@ -367,4 +381,13 @@ template<typename T>
 T Renderer::Interpolate(const glm::vec3 br, const T a, const T b, const T c)
 {
     return a * br.x + b * br.y + c * br.z;
+}
+
+bool Renderer::canCull(glm::vec4 a, glm::vec4 b, glm::vec4 c)
+{
+    const glm::vec3 a3 = a, b3 = b, c3 = c;
+
+    const float cull = glm::dot(glm::cross(b3 - a3, c3 - a3), a3);
+
+    return cull > 0.0f;
 }

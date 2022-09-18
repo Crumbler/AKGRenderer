@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <glm/glm.hpp>
 
 struct Color
 {
@@ -15,6 +16,13 @@ struct Color
 
     constexpr Color(uint8_t b = 0)
         : r(b), g(b), b(b) { }
+
+    Color(const glm::vec3 v)
+    {
+        r = std::round(255.0f * v.x);
+        g = std::round(255.0f * v.y);
+        b = std::round(255.0f * v.z);
+    }
 
     uint8_t r, g, b;
 };

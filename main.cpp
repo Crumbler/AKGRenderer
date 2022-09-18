@@ -104,7 +104,9 @@ void GUI_Main(GLFWwindow *window)
 
     ImGui::SliderFloat3("Model rotation", &renderer.modelRot.x, -180.0f, 180.0f);
 
-    ImGui::SliderFloat3("Model scale", &renderer.modelScale.x, 0.03f, 1.0f);
+    ImGui::SliderFloat3("Model scale", &renderer.modelScale.x, 0.02f, 1.0f);
+
+    ImGui::Checkbox("Backface culling", &renderer.backfaceCulling);
 
     ImGui::End();
 }

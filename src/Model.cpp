@@ -55,8 +55,6 @@ Model::Model(const std::string& filename)
 
     adjustIndices();
 
-    calculateFaceNormals();
-
     printf("Loaded model. Vertices: %d, faces: %d\n", vCount, fCount);
     printf("Texture coords: %d, normals: %d\n", tCount, nCount);
 }
@@ -76,17 +74,6 @@ void Model::adjustIndices()
             glm::ivec3& n = f.normals;
             n[i] = n[i] > 0 ? n[i] - 1 : szN + n[i];
         }
-    }
-}
-
-void Model::calculateFaceNormals()
-{
-    for (const Face f : faces)
-    {
-        glm::vec3 n = normals[f.normals[0]] + normals[f.normals[0]]  + normals[f.normals[0]];
-        n /= 3.0f;
-
-        faceNormals.push_back(n);
     }
 }
 

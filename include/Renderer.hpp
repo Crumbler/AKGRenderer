@@ -13,6 +13,7 @@ class Renderer
         void LoadModel(const std::string& filename);
 
         float FOV;
+        bool backfaceCulling;
         glm::vec3 camPos, modelScale,
             modelPos, modelRot;
 
@@ -26,14 +27,15 @@ class Renderer
         void renderModel();
         void setPixel(const int x, const int y, const float z, const Color c);
         template<typename T> static T Interpolate(const glm::vec3 br, const T a, const T b, const T c);
+        static bool canCull(glm::vec4 a, glm::vec4 b, glm::vec4 c);
         void genProjectionMatrix();
         void genViewportMatrix();
         void genViewMatrix();
         void genModelMatrix();
 
-        glm::mat4 modelMat, viewMat, projMat, viewportMat, viewProjMat;
+        glm::mat4 modelMat, viewMat, projMat, viewportMat;
         Color *buffer;
         float *zBuffer;
-        int width, height;
+        int width, height, culledFaces;
         Model *model;
 };
