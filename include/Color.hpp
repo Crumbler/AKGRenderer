@@ -10,8 +10,11 @@ struct Color
     static constexpr Color black() { return Color(0, 0, 0); }
     static constexpr Color white() { return Color(255, 255, 255); }
 
-    constexpr Color(uint8_t r = 0, uint8_t g = 0, uint8_t b = 0)
+    constexpr Color(uint8_t r, uint8_t g, uint8_t b)
         : r(r), g(g), b(b) { }
+
+    constexpr Color(uint8_t b = 0)
+        : r(b), g(b), b(b) { }
 
     uint8_t r, g, b;
 };

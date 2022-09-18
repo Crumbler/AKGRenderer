@@ -20,12 +20,12 @@ class Renderer
         int index(int i, int j) const;
         void drawLine(float x0, float y0, float x1, float y1);
         void drawLine(glm::vec4 a, glm::vec4 b);
-        void drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c);
-        void drawTopTriangle(glm::vec2 a, glm::vec2 b, glm::vec2 c);
-        void drawBottomTriangle(glm::vec2 a, glm::vec2 b, glm::vec2 c);
+        void drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c, Color col);
+        void drawTopTriangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, Color col);
+        void drawBottomTriangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, Color col);
         void renderModel();
-        void setPixel(const int x, const int y, const Color c);
-
+        void setPixel(const int x, const int y, const float z, const Color c);
+        template<typename T> static T Interpolate(const glm::vec3 br, const T a, const T b, const T c);
         void genProjectionMatrix();
         void genViewportMatrix();
         void genViewMatrix();
@@ -33,6 +33,7 @@ class Renderer
 
         glm::mat4 modelMat, viewMat, projMat, viewportMat, viewProjMat;
         Color *buffer;
+        float *zBuffer;
         int width, height;
         Model *model;
 };

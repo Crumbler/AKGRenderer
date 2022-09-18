@@ -10,6 +10,7 @@
 Renderer::Renderer()
 {
     buffer = nullptr;
+    zBuffer = nullptr;
     model = nullptr;
 
     FOV = 90.0f;
@@ -34,28 +35,38 @@ const void* Renderer::Render(int width, int height, bool sizeChanged)
     if (sizeChanged && buffer != nullptr)
     {
         char *ptr = (char*)buffer;
-        delete [] ptr;
+        delete[] ptr;
+        delete[] zBuffer;
     }
 
     if (sizeChanged || buffer == nullptr)
     {
         buffer = (Color*)new char[width * height * 3];
+        zBuffer = new float[width * height];
     }
 
     memset((void*)buffer, 0, width * height * 3);
+    for (int i = 0; i < width * height; ++i)
+    {
+        zBuffer[i] = 1.0f;
+    }
 
     renderModel();
 
     return buffer;
 }
 
-void Renderer::drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c)
+void Renderer::drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c, Color col)
 {
     using std::swap;
 
-    a = viewProjMat * modelMat * a;
-    b = viewProjMat * modelMat * b;
-    c = viewProjMat * modelMat * c;
+    a = modelMat * a;
+    b = modelMat * b;
+    c = modelMat * c;
+
+    a = viewProjMat * a;
+    b = viewProjMat * b;
+    c = viewProjMat * c;
 
     a /= a.w;
     b /= b.w;
@@ -93,7 +104,7 @@ void Renderer::drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c)
         {
             swap(a, b);
         }
-        drawBottomTriangle(a, b, c);
+        drawBottomTriangle(a, b, c, col);
     }
     else if (b.y == c.y)
     {
@@ -102,72 +113,114 @@ void Renderer::drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c)
         {
             swap(b, c);
         }
-        drawTopTriangle(a, b, c);
+        drawTopTriangle(a, b, c, col);
     }
     else // general triangle
     {
         const float ratio = (b.y - a.y) / (c.y - a.y);
 
-        const glm::vec2 newV = a + (c - a) * ratio;
+        const glm::vec3 newV = a + (c - a) * ratio;
 
         if (b.x < newV.x)
         {
             // new vertex on the right edge
-            drawTopTriangle(a, b, newV);
-            drawBottomTriangle(b, newV, c);
+            drawTopTriangle(a, b, newV, col);
+            drawBottomTriangle(b, newV, c, col);
         }
         else
         {
             // new vertex on the left edge
-            drawTopTriangle(a, newV, b);
-            drawBottomTriangle(newV, b, c);
+            drawTopTriangle(a, newV, b, col);
+            drawBottomTriangle(newV, b, c, col);
         }
     }
 }
 
-void Renderer::drawTopTriangle(glm::vec2 a, glm::vec2 b, glm::vec2 c)
+void Renderer::drawTopTriangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, Color col)
 {
     const float mLeft = (b.x - a.x) / (b.y - a.y),
         mRight = (c.x - a.x) / (c.y - a.y);
 
+    glm::vec3 brLeft(0.0f, 1.0f, 0.0f),
+        brTop(1.0f, 0.0f, 0.0f),
+        brRight(0.0f, 0.0f, 1.0f);
+
+    const glm::vec3 brStepLeft = (brLeft - brTop) / (b.y - a.y),
+        brStepRight = (brRight - brTop) / (c.y - a.y);
+
     const int yStart = std::ceil(a.y - 0.5f),
         yEnd = std::ceil(c.y - 0.5f);
 
+    brLeft += brStepLeft * (yStart - a.y + 0.5f);
+    brRight += brStepRight * (yStart - a.y + 0.5f);
+
     for (int y = yStart; y < yEnd; ++y)
     {
-        int xStart = mLeft * (y - a.y + 0.5f) + a.x,
-            xEnd = mRight * (y - a.y + 0.5f) + a.x;
+        const float pxLeft = mLeft * (y - a.y + 0.5f) + a.x,
+            pxRight = mRight * (y - a.y + 0.5f) + a.x;
 
-        xStart = std::ceil(xStart - 0.5f);
-        xEnd = std::ceil(xEnd - 0.5f);
+        const int xStart = std::ceil(pxLeft - 0.5f),
+            xEnd = std::ceil(pxRight - 0.5f);
+
+        const glm::vec3 brScanStep = (brRight - brLeft) / (pxRight - pxLeft);
+
+        glm::vec3 br = brLeft + brScanStep * (xStart - pxLeft + 0.5f);
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            setPixel(x, y, Color::white());
+            const float z = Interpolate(br, a.z, b.z, c.z);
+
+            setPixel(x, y, z, col);
+
+            br += brScanStep;
         }
+
+        brLeft += brStepLeft;
+        brRight += brStepRight;
     }
 }
 
-void Renderer::drawBottomTriangle(glm::vec2 a, glm::vec2 b, glm::vec2 c)
+void Renderer::drawBottomTriangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, Color col)
 {
     const float mLeft = (c.x - a.x) / (c.y - a.y),
-        mRight = (c.x - b.x) / (c.y - b.y);
+        mRight = (c.x - b.x) / (c.y - a.y);
+
+    glm::vec3 brLeft(1.0f, 0.0f, 0.0f),
+        brBottom(0.0f, 0.0f, 1.0f),
+        brRight(0.0f, 1.0f, 0.0f);
+
+    const glm::vec3 brStepLeft = (brBottom - brLeft) / (c.y - a.y),
+        brStepRight = (brBottom - brRight) / (c.y - b.y);
 
     const int yStart = std::ceil(a.y - 0.5f),
         yEnd = std::ceil(c.y - 0.5f);
 
+    brLeft += brStepLeft * (yStart - a.y + 0.5f);
+    brRight += brStepRight * (yStart - a.y + 0.5f);
+
     for (int y = yStart; y < yEnd; ++y)
     {
-        int xStart = mLeft * (y - a.y + 0.5f) + a.x,
-            xEnd = mRight * (y - a.y + 0.5f) + b.x;
+        const float pxLeft = mLeft * (y - a.y + 0.5f) + a.x,
+            pxRight = mRight * (y - a.y + 0.5f) + b.x;
 
-        xStart = std::ceil(xStart - 0.5f);
-        xEnd = std::ceil(xEnd - 0.5f);
+        const int xStart = std::ceil(pxLeft - 0.5f),
+            xEnd = std::ceil(pxRight - 0.5f);
+
+        const glm::vec3 brScanStep = (brRight - brLeft) / (pxRight - pxLeft);
+
+        glm::vec3 br = brLeft + brScanStep * (xStart - pxLeft + 0.5f);
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            setPixel(x, y, Color::white());
+            const float z = Interpolate(br, a.z, b.z, c.z);
+
+            setPixel(x, y, z, col);
+
+            br += brScanStep;
         }
+
+        brLeft += brStepLeft;
+        brRight += brStepRight;
     }
 }
 
@@ -181,14 +234,20 @@ void Renderer::drawLine(glm::vec4 a, glm::vec4 b)
     drawLine(a.x, a.y, b.x, b.y);
 }
 
-void Renderer::setPixel(const int x, const int y, const Color c)
+void Renderer::setPixel(const int x, const int y, const float z, const Color c)
 {
     if (x < 0 || x >= width || y < 0 || y >= height)
     {
         return;
     }
 
-    buffer[index(y, x)] = c;
+    const int ind = index(y, x);
+
+    if (zBuffer[ind] > z)
+    {
+        zBuffer[ind] = z;
+        buffer[ind] = c;
+    }
 }
 
 void Renderer::genModelMatrix()
@@ -249,11 +308,16 @@ void Renderer::renderModel()
         return;
     }
 
-    for (const auto f : model->faces)
+    for (size_t i = 0; i < model->faces.size(); ++i)
     {
+        const Face& f = model->faces[i];
+
+        Color col(128 + i % 64);
+
         drawTriangle(model->vertices[f.vertices[0]],
                      model->vertices[f.vertices[1]],
-                     model->vertices[f.vertices[2]]);
+                     model->vertices[f.vertices[2]],
+                     col);
     }
 }
 
@@ -289,7 +353,7 @@ void Renderer::drawLine(float x0, float y0, float x1, float y1)
             continue;
         }
 
-        setPixel(x0, y0, Color::white());
+        setPixel(x0, y0, 0.0f, Color::white());
     }
 }
 
@@ -297,4 +361,10 @@ void Renderer::drawLine(float x0, float y0, float x1, float y1)
 int Renderer::index(int i, int j) const
 {
     return i * width + j;
+}
+
+template<typename T>
+T Renderer::Interpolate(const glm::vec3 br, const T a, const T b, const T c)
+{
+    return a * br.x + b * br.y + c * br.z;
 }

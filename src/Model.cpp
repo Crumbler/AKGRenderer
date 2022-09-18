@@ -55,21 +55,38 @@ Model::Model(const std::string& filename)
 
     adjustIndices();
 
+    calculateFaceNormals();
+
     printf("Loaded model. Vertices: %d, faces: %d\n", vCount, fCount);
     printf("Texture coords: %d, normals: %d\n", tCount, nCount);
 }
 
 void Model::adjustIndices()
 {
-    const int sz = vertices.size();
+    const int szV = vertices.size(),
+        szN = normals.size();
 
     for (Face& f : faces)
     {
         for (int i = 0; i < 3; ++i)
         {
             glm::ivec3& p = f.vertices;
-            p[i] = p[i] > 0 ? p[i] - 1 : sz + p[i];
+            p[i] = p[i] > 0 ? p[i] - 1 : szV + p[i];
+
+            glm::ivec3& n = f.normals;
+            n[i] = n[i] > 0 ? n[i] - 1 : szN + n[i];
         }
+    }
+}
+
+void Model::calculateFaceNormals()
+{
+    for (const Face f : faces)
+    {
+        glm::vec3 n = normals[f.normals[0]] + normals[f.normals[0]]  + normals[f.normals[0]];
+        n /= 3.0f;
+
+        faceNormals.push_back(n);
     }
 }
 
