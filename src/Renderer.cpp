@@ -55,18 +55,27 @@ const void* Renderer::Render(int width, int height, bool sizeChanged)
 
     renderModel();
 
-    printf("Culled faces: %d\n", culledFaces);
+    if (backfaceCulling)
+    {
+        printf("Culled faces: %d\n", culledFaces);
+    }
 
     return buffer;
 }
 
-void Renderer::drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c, Color col)
+void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
 {
     using std::swap;
+
+    glm::vec4 a = glm::vec4(va.v, 1.0f),
+        b = glm::vec4(vb.v, 1.0f),
+        c = glm::vec4(vc.v, 1.0f);
 
     a = modelMat * a;
     b = modelMat * b;
     c = modelMat * c;
+
+
 
     a = viewMat * a;
     b = viewMat * b;
@@ -96,62 +105,72 @@ void Renderer::drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c, Color col)
         return;
     }
 
-    if (a.y > b.y)
+    va.v = a;
+    vb.v = b;
+    vc.v = c;
+
+    if (va.v.y > vb.v.y)
     {
-        swap(a, b);
+        swap(va, vb);
     }
 
-    if (b.y > c.y)
+    if (vb.v.y > vc.v.y)
     {
-        swap(b, c);
+        swap(vb, vc);
     }
 
-    if (a.y > b.y)
+    if (va.v.y > vb.v.y)
     {
-        swap(a, b);
+        swap(va, vb);
     }
 
-    if (a.y == b.y)
+    if (va.v.y == vb.v.y)
     {
         // natural bottom triangle
-        if (a.x > b.x)
+        if (va.v.x > vb.v.x)
         {
-            swap(a, b);
+            swap(va, vb);
         }
-        drawBottomTriangle(a, b, c, col);
+        drawBottomTriangle(va, vb, vc, col);
     }
-    else if (b.y == c.y)
+    else if (vb.v.y == vc.v.y)
     {
         // natural top triangle
-        if (b.x > c.x)
+        if (vb.v.x > vc.v.x)
         {
-            swap(b, c);
+            swap(vb, vc);
         }
-        drawTopTriangle(a, b, c, col);
+        drawTopTriangle(va, vb, vc, col);
     }
     else // general triangle
     {
-        const float ratio = (b.y - a.y) / (c.y - a.y);
+        const float ratio = (vb.v.y - va.v.y) / (vc.v.y - va.v.y);
 
-        const glm::vec3 newV = a + (c - a) * ratio;
+        Vertex newV;
 
-        if (b.x < newV.x)
+        newV.v = va.v + (vc.v - va.v) * ratio;
+
+        if (vb.v.x < newV.v.x)
         {
             // new vertex on the right edge
-            drawTopTriangle(a, b, newV, col);
-            drawBottomTriangle(b, newV, c, col);
+            drawTopTriangle(va, vb, newV, col);
+            drawBottomTriangle(vb, newV, vc, col);
         }
         else
         {
             // new vertex on the left edge
-            drawTopTriangle(a, newV, b, col);
-            drawBottomTriangle(newV, b, c, col);
+            drawTopTriangle(va, newV, vb, col);
+            drawBottomTriangle(newV, vb, vc, col);
         }
     }
 }
 
-void Renderer::drawTopTriangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, Color col)
+void Renderer::drawTopTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
 {
+    const glm::vec3& a = va.v,
+        b = vb.v,
+        c = vc.v;
+
     const float mLeft = (b.x - a.x) / (c.y - a.y),
         mRight = (c.x - a.x) / (c.y - a.y);
 
@@ -194,8 +213,12 @@ void Renderer::drawTopTriangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, Color col)
     }
 }
 
-void Renderer::drawBottomTriangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, Color col)
+void Renderer::drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
 {
+    const glm::vec3& a = va.v,
+        b = vb.v,
+        c = vc.v;
+
     const float mLeft = (c.x - a.x) / (c.y - a.y),
         mRight = (c.x - b.x) / (c.y - a.y);
 
@@ -324,14 +347,14 @@ void Renderer::renderModel()
 
     for (size_t i = 0; i < model->faces.size(); ++i)
     {
-        const Face& f = model->faces[i];
+        const Face f = model->faces[i];
+
+        Vertex va, vb, vc;
+        model->getVertices(f, va, vb, vc);
 
         Color col(128 + i % 128);
 
-        drawTriangle(model->vertices[f.vertices[0]],
-                     model->vertices[f.vertices[1]],
-                     model->vertices[f.vertices[2]],
-                     col);
+        drawTriangle(va, vb, vc, col);
     }
 }
 
@@ -377,6 +400,12 @@ int Renderer::index(int i, int j) const
     return i * width + j;
 }
 
+float Renderer::calcLighting(const glm::vec3 n)
+{
+    const glm::vec3 lightDir(1.0f, 0.0f, 0.0f);
+    return glm::dot(lightDir, n) * -0.5f + 0.5f;
+}
+
 template<typename T>
 T Renderer::Interpolate(const glm::vec3 br, const T a, const T b, const T c)
 {
@@ -389,5 +418,5 @@ bool Renderer::canCull(glm::vec4 a, glm::vec4 b, glm::vec4 c)
 
     const float cull = glm::dot(glm::cross(b3 - a3, c3 - a3), a3);
 
-    return cull > 0.0f;
+    return cull >= 0.0f;
 }

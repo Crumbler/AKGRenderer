@@ -59,6 +59,13 @@ Model::Model(const std::string& filename)
     printf("Texture coords: %d, normals: %d\n", tCount, nCount);
 }
 
+void Model::getVertices(const Face f, Vertex& a, Vertex& b, Vertex& c)
+{
+    a.v = vertices[f.vertices[0]];
+    b.v = vertices[f.vertices[1]];
+    c.v = vertices[f.vertices[2]];
+}
+
 void Model::adjustIndices()
 {
     const int szV = vertices.size(),

@@ -2,6 +2,7 @@
 
 #include "Color.hpp"
 #include "Model.hpp"
+#include "Vertex.hpp"
 #include <string>
 
 class Renderer
@@ -21,9 +22,9 @@ class Renderer
         int index(int i, int j) const;
         void drawLine(float x0, float y0, float x1, float y1);
         void drawLine(glm::vec4 a, glm::vec4 b);
-        void drawTriangle(glm::vec4 a, glm::vec4 b, glm::vec4 c, Color col);
-        void drawTopTriangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, Color col);
-        void drawBottomTriangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, Color col);
+        void drawTriangle(Vertex va, Vertex vb, Vertex vc, Color col);
+        void drawTopTriangle(Vertex va, Vertex vb, Vertex vc, Color col);
+        void drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, Color col);
         void renderModel();
         void setPixel(const int x, const int y, const float z, const Color c);
         template<typename T> static T Interpolate(const glm::vec3 br, const T a, const T b, const T c);
@@ -32,6 +33,7 @@ class Renderer
         void genViewportMatrix();
         void genViewMatrix();
         void genModelMatrix();
+        float calcLighting(const glm::vec3 n);
 
         glm::mat4 modelMat, viewMat, projMat, viewportMat;
         Color *buffer;
