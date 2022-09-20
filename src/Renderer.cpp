@@ -14,10 +14,12 @@ Renderer::Renderer()
     model = nullptr;
 
     backfaceCulling = false;
+    flatShading = false;
 
     FOV = 90.0f;
     camPos = glm::vec3(0.0f, 0.0f, 1.0f);
     modelScale = glm::vec3(1.0f);
+    lightPos = glm::vec3(-3.0f, 0.0f, 0.0f);
 }
 
 const void* Renderer::Render(int width, int height, bool sizeChanged)
@@ -63,9 +65,11 @@ const void* Renderer::Render(int width, int height, bool sizeChanged)
     return buffer;
 }
 
-void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
+void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
 {
     using std::swap;
+
+    Color col = Color::white();
 
     glm::vec4 a = glm::vec4(va.v, 1.0f),
         b = glm::vec4(vb.v, 1.0f),
@@ -75,7 +79,24 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
     b = modelMat * b;
     c = modelMat * c;
 
+    if (flatShading)
+    {
+        glm::vec4 na = modelMat * glm::vec4(va.n, 0.0f),
+            nb = modelMat * glm::vec4(vb.n, 0.0f),
+            nc = modelMat * glm::vec4(vc.n, 0.0f);
 
+        na = glm::normalize(na);
+        nb = glm::normalize(nb);
+        nc = glm::normalize(nc);
+
+        const float l1 = calcLighting(a, na),
+            l2 = calcLighting(b, nb),
+            l3 = calcLighting(c, nc);
+
+        const float totalLighting = (l1 + l2 + l3) / 3.0f;
+
+        col = Color::flat(totalLighting);
+    }
 
     a = viewMat * a;
     b = viewMat * b;
@@ -352,9 +373,7 @@ void Renderer::renderModel()
         Vertex va, vb, vc;
         model->getVertices(f, va, vb, vc);
 
-        Color col(128 + i % 128);
-
-        drawTriangle(va, vb, vc, col);
+        drawTriangle(va, vb, vc);
     }
 }
 
@@ -400,9 +419,10 @@ int Renderer::index(int i, int j) const
     return i * width + j;
 }
 
-float Renderer::calcLighting(const glm::vec3 n)
+float Renderer::calcLighting(const glm::vec3 p, const glm::vec3 n)
 {
-    const glm::vec3 lightDir(1.0f, 0.0f, 0.0f);
+    const glm::vec3 lightDir = glm::normalize(p - lightPos);
+
     return glm::dot(lightDir, n) * -0.5f + 0.5f;
 }
 
@@ -412,11 +432,9 @@ T Renderer::Interpolate(const glm::vec3 br, const T a, const T b, const T c)
     return a * br.x + b * br.y + c * br.z;
 }
 
-bool Renderer::canCull(glm::vec4 a, glm::vec4 b, glm::vec4 c)
+bool Renderer::canCull(const glm::vec3 a, const glm::vec3 b, const glm::vec3 c)
 {
-    const glm::vec3 a3 = a, b3 = b, c3 = c;
-
-    const float cull = glm::dot(glm::cross(b3 - a3, c3 - a3), a3);
+    const float cull = glm::dot(glm::cross(b - a, c - a), a);
 
     return cull >= 0.0f;
 }

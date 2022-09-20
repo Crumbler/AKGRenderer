@@ -64,6 +64,10 @@ void Model::getVertices(const Face f, Vertex& a, Vertex& b, Vertex& c)
     a.v = vertices[f.vertices[0]];
     b.v = vertices[f.vertices[1]];
     c.v = vertices[f.vertices[2]];
+
+    a.n = normals[f.normals[0]];
+    b.n = normals[f.normals[1]];
+    c.n = normals[f.normals[2]];
 }
 
 void Model::adjustIndices()
