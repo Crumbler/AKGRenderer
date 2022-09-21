@@ -423,7 +423,9 @@ float Renderer::calcLighting(const glm::vec3 p, const glm::vec3 n)
 {
     const glm::vec3 lightDir = glm::normalize(p - lightPos);
 
-    return glm::dot(lightDir, n) * -0.5f + 0.5f;
+    const float res = glm::dot(lightDir, -n);
+
+    return std::clamp(res, 0.0f, 1.0f);
 }
 
 template<typename T>

@@ -42,7 +42,7 @@ Model::Model(const std::string& filename)
             loadFace(file);
         }
 
-        if (!file)
+        if (!file && !file.eof())
         {
             printf("Model parsing failed\n");
             break;
@@ -130,26 +130,20 @@ void Model::loadFace(std::ifstream& file)
 
     faces.push_back(Face(v, t, n));
 
-    bool hasFourthVertex = false;
-    if (file.peek() == ' ')
-    {
-        char c;
-        file.get(c);
-    }
-
-    if (file.peek() != '\n')
-    {
-        hasFourthVertex = true;
-    }
+    bool hasFourthVertex = file.peek() == ' ';
 
     // quad face
     if (hasFourthVertex)
     {
         a = loadFaceVertex(file);
 
-        v[0] = a[0];
-        t[0] = a[1];
-        n[0] = a[2];
+        v[1] = v[2];
+        t[1] = t[2];
+        n[1] = n[2];
+
+        v[2] = a[0];
+        t[2] = a[1];
+        n[2] = a[2];
 
         faces.push_back(Face(v, t, n));
     }
@@ -163,23 +157,27 @@ glm::ivec3 Model::loadFaceVertex(std::ifstream& file)
 
     file >> v[0];
 
-    if (file.peek() == '/')
+    if (file.peek() != '/')
     {
-        file >> c;
+        return v;
     }
 
-    if (file.peek() == '/')
-    {
-        file >> c;
-    }
-    else
-    {
-        file >> v[1];
-    }
+    file >> c;
 
+    // normal with no texture
     if (file.peek() == '/')
     {
         file >> c >> v[2];
+    }
+    else
+    {
+        // texture
+        file >> v[1];
+        if (file.peek() == '/')
+        {
+            // normal
+            file >> c >> v[2];
+        }
     }
 
     return v;
