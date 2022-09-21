@@ -55,6 +55,8 @@ Model::Model(const std::string& filename)
 
     adjustIndices();
 
+    centerModel();
+
     printf("Loaded model. Vertices: %d, faces: %d\n", vCount, fCount);
     printf("Texture coords: %d, normals: %d\n", tCount, nCount);
 }
@@ -90,17 +92,15 @@ void Model::adjustIndices()
 
 void Model::loadVertex(std::ifstream& file)
 {
-    glm::vec4 v;
+    glm::vec3 v;
+    float tmp;
 
     file >> v.x >> v.y >> v.z;
 
-    if (file.peek() != ' ')
+    if (file.peek() == ' ')
     {
-        v.w = 1.0f;
-    }
-    else
-    {
-        file >> v.w;
+        // w
+        file >> tmp;
     }
 
     vertices.push_back(v);
@@ -181,6 +181,23 @@ glm::ivec3 Model::loadFaceVertex(std::ifstream& file)
     }
 
     return v;
+}
+
+void Model::centerModel()
+{
+    glm::vec3 center(0.0f);
+
+    for (const glm::vec3 v : vertices)
+    {
+        center += v;
+    }
+
+    center /= (float)vertices.size();
+
+    for (glm::vec3& v : vertices)
+    {
+        v -= center;
+    }
 }
 
 void Model::loadTextureCoords(std::ifstream& file)
