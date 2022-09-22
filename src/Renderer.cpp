@@ -343,20 +343,10 @@ void Renderer::genProjectionMatrix()
 
 void Renderer::genViewMatrix()
 {
-    using glm::vec3;
+    const glm::vec3 up(0.0f, 1.0f, 0.0f),
+        target(0.0f);
 
-    const vec3 up = vec3(0.0f, 1.0f, 0.0f),
-        eye = camPos,
-        target = vec3(0.0f),
-        zAxis = glm::normalize(eye - target),
-        xAxis = glm::normalize(glm::cross(up, zAxis)),
-        yAxis = up;
-
-    viewMat = glm::mat4(xAxis.x, yAxis.x, zAxis.x, 0.0f,
-                        xAxis.y, yAxis.y, zAxis.y, 0.0f,
-                        xAxis.z, yAxis.z, zAxis.z, 0.0f,
-                        -glm::dot(xAxis, eye), -glm::dot(yAxis, eye),
-                        -glm::dot(zAxis, eye), 1.0f);
+    viewMat = glm::lookAt(camPos, target, up);
 }
 
 void Renderer::renderModel()
