@@ -16,7 +16,9 @@ class Renderer
         float FOV;
         bool backfaceCulling, flatShading;
         glm::vec3 camPos, modelScale,
-            modelPos, modelRot, lightPos;
+            modelPos, modelRot;
+
+        glm::vec2 lightDir;
 
     private:
         int index(int i, int j) const;
@@ -33,9 +35,11 @@ class Renderer
         void genViewportMatrix();
         void genViewMatrix();
         void genModelMatrix();
-        float calcLighting(const glm::vec3 p, const glm::vec3 n);
+        void genLightVec();
+        float calcLighting(const glm::vec3 n);
 
         glm::mat4 modelMat, viewMat, projMat, viewportMat;
+        glm::vec3 lightVec;
         Color *buffer;
         float *zBuffer;
         int width, height, culledFaces;

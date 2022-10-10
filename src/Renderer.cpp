@@ -19,7 +19,7 @@ Renderer::Renderer()
     FOV = 90.0f;
     camPos = glm::vec3(0.0f, 0.0f, 1.0f);
     modelScale = glm::vec3(1.0f);
-    lightPos = glm::vec3(-3.0f, 0.0f, 0.0f);
+    lightDir = glm::vec2(0.0f);
 }
 
 const void* Renderer::Render(int width, int height, bool sizeChanged)
@@ -33,6 +33,7 @@ const void* Renderer::Render(int width, int height, bool sizeChanged)
     genViewportMatrix();
     genViewMatrix();
     genModelMatrix();
+    genLightVec();
 
     if (sizeChanged && buffer != nullptr)
     {
@@ -89,9 +90,9 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
         nb = glm::normalize(nb);
         nc = glm::normalize(nc);
 
-        const float l1 = calcLighting(a, na),
-            l2 = calcLighting(b, nb),
-            l3 = calcLighting(c, nc);
+        const float l1 = calcLighting(na),
+            l2 = calcLighting(nb),
+            l3 = calcLighting(nc);
 
         const float totalLighting = (l1 + l2 + l3) / 3.0f;
 
@@ -349,6 +350,14 @@ void Renderer::genViewMatrix()
     viewMat = glm::lookAt(camPos, target, up);
 }
 
+void Renderer::genLightVec()
+{
+    glm::vec2 angle = glm::radians(lightDir);
+    glm::vec4 v = glm::eulerAngleYX(-angle.x, angle.y) * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+
+    lightVec = v;
+}
+
 void Renderer::renderModel()
 {
     if (model == nullptr)
@@ -409,11 +418,9 @@ int Renderer::index(int i, int j) const
     return i * width + j;
 }
 
-float Renderer::calcLighting(const glm::vec3 p, const glm::vec3 n)
+float Renderer::calcLighting(const glm::vec3 n)
 {
-    const glm::vec3 lightDir = glm::normalize(p - lightPos);
-
-    const float res = glm::dot(lightDir, -n);
+    const float res = glm::dot(lightVec, -n);
 
     return std::clamp(res, 0.0f, 1.0f);
 }
