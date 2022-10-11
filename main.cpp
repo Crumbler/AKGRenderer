@@ -112,6 +112,8 @@ void GUI_Main(GLFWwindow *window)
 
     ImGui::Checkbox("Flat shading", &renderer.flatShading);
 
+    ImGui::Checkbox("Smooth shading", &renderer.smoothShading);
+
     ImGui::End();
 }
 

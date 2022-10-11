@@ -17,6 +17,13 @@ struct Color
                      std::round(255.0f * f));
     }
 
+    static constexpr Color mul(const Color c, const float f)
+    {
+        return Color(std::round((float)c.r * f),
+                     std::round((float)c.g * f),
+                     std::round((float)c.b * f));
+    }
+
     constexpr Color(uint8_t r, uint8_t g, uint8_t b)
         : r(r), g(g), b(b) { }
 

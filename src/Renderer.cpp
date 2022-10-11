@@ -15,6 +15,7 @@ Renderer::Renderer()
 
     backfaceCulling = false;
     flatShading = false;
+    smoothShading = false;
 
     FOV = 90.0f;
     camPos = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -80,28 +81,40 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
     b = modelMat * b;
     c = modelMat * c;
 
-    if (flatShading)
-    {
-        glm::vec4 na = modelMat * glm::vec4(va.n, 0.0f),
+    glm::vec4 na = modelMat * glm::vec4(va.n, 0.0f),
             nb = modelMat * glm::vec4(vb.n, 0.0f),
             nc = modelMat * glm::vec4(vc.n, 0.0f);
 
-        na = glm::normalize(na);
-        nb = glm::normalize(nb);
-        nc = glm::normalize(nc);
-
-        const float l1 = calcLighting(na),
-            l2 = calcLighting(nb),
-            l3 = calcLighting(nc);
-
-        const float totalLighting = (l1 + l2 + l3) / 3.0f;
-
-        col = Color::flat(totalLighting);
-    }
+    na = glm::normalize(na);
+    nb = glm::normalize(nb);
+    nc = glm::normalize(nc);
 
     a = viewMat * a;
     b = viewMat * b;
     c = viewMat * c;
+
+    na = viewMat * na;
+    nb = viewMat * nb;
+    nc = viewMat * nc;
+
+    na = glm::normalize(na);
+    nb = glm::normalize(nb);
+    nc = glm::normalize(nc);
+
+    va.n = na;
+    vb.n = nb;
+    vc.n = nc;
+
+    if (flatShading && !smoothShading)
+    {
+        const float l1 = calcLighting(na),
+            l2 = calcLighting(nb),
+            l3 = calcLighting(nc);
+
+        const float totalLighting = std::clamp((l1 + l2 + l3) / 3.0f + 0.1f, 0.0f, 1.0f);
+
+        col = Color::flat(totalLighting);
+    }
 
     if (backfaceCulling && canCull(a, b, c))
     {
@@ -113,6 +126,13 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
     b = projMat * b;
     c = projMat * c;
 
+    if (a.z < Renderer::zNear || a.z > Renderer::zFar ||
+        b.z < Renderer::zNear || b.z > Renderer::zFar ||
+        c.z < Renderer::zNear || c.z > Renderer::zFar)
+    {
+        return;
+    }
+
     a /= a.w;
     b /= b.w;
     c /= c.w;
@@ -120,12 +140,6 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
     a = viewportMat * a;
     b = viewportMat * b;
     c = viewportMat * c;
-
-    glm::vec3 zs = glm::abs(glm::vec3(a.z, b.z, c.z));
-    if (zs.x > 1.0f || zs.y > 1.0f || zs.z > 1.0f)
-    {
-        return;
-    }
 
     va.v = a;
     vb.v = b;
@@ -225,7 +239,16 @@ void Renderer::drawTopTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
         {
             const float z = Interpolate(br, a.z, b.z, c.z);
 
-            setPixel(x, y, z, col);
+            Color pCol = col;
+
+            if (smoothShading)
+            {
+                const glm::vec3 n = Interpolate(br, va.n, vb.n, vc.n);
+                const float l = calcLighting(n);
+                pCol = Color::mul(col, l);
+            }
+
+            setPixel(x, y, z, pCol);
 
             br += brScanStep;
         }
@@ -273,7 +296,16 @@ void Renderer::drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
         {
             const float z = Interpolate(br, a.z, b.z, c.z);
 
-            setPixel(x, y, z, col);
+            Color pCol = col;
+
+            if (smoothShading)
+            {
+                const glm::vec3 n = Interpolate(br, va.n, vb.n, vc.n);
+                const float l = calcLighting(n);
+                pCol = Color::mul(col, l);
+            }
+
+            setPixel(x, y, z, pCol);
 
             br += brScanStep;
         }
@@ -334,7 +366,7 @@ void Renderer::genProjectionMatrix()
     const float fov = glm::radians(this->FOV),
         aspect = (float)width / height,
         t = std::tan(fov / 2.0f),
-        znear = 0.1f, zfar = 100.0f;
+        znear = Renderer::zNear, zfar = Renderer::zFar;
 
     projMat = glm::mat4(1.0f / (aspect * t), 0.0f, 0.0f, 0.0f,
                         0.0f, 1.0f / t, 0.0f, 0.0f,
@@ -356,6 +388,9 @@ void Renderer::genLightVec()
     glm::vec4 v = glm::eulerAngleYX(-angle.x, angle.y) * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
 
     lightVec = v;
+
+    lightVecView = viewMat * glm::vec4(lightVec, 0.0f);
+    lightVecView = glm::normalize(lightVecView);
 }
 
 void Renderer::renderModel()
@@ -420,7 +455,7 @@ int Renderer::index(int i, int j) const
 
 float Renderer::calcLighting(const glm::vec3 n)
 {
-    const float res = glm::dot(lightVec, -n);
+    const float res = glm::dot(lightVecView, -n);
 
     return std::clamp(res, 0.0f, 1.0f);
 }

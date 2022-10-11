@@ -14,7 +14,7 @@ class Renderer
         void LoadModel(const std::string& filename);
 
         float FOV;
-        bool backfaceCulling, flatShading;
+        bool backfaceCulling, flatShading, smoothShading;
         glm::vec3 camPos, modelScale,
             modelPos, modelRot;
 
@@ -39,9 +39,10 @@ class Renderer
         float calcLighting(const glm::vec3 n);
 
         glm::mat4 modelMat, viewMat, projMat, viewportMat;
-        glm::vec3 lightVec;
+        glm::vec3 lightVec, lightVecView;
         Color *buffer;
         float *zBuffer;
         int width, height, culledFaces;
+        constexpr static float zNear = 0.1f, zFar = 100.0f;
         Model *model;
 };
