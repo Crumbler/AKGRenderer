@@ -5,5 +5,7 @@
 
 struct Vertex
 {
-    glm::vec3 v, n;
+    glm::vec3 v, n, posView;
+
+    static Vertex Combine(const Vertex a, const Vertex b, const float ratio);
 };

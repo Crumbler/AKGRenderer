@@ -110,9 +110,25 @@ void GUI_Main(GLFWwindow *window)
 
     ImGui::Checkbox("Backface culling", &renderer.backfaceCulling);
 
-    ImGui::Checkbox("Flat shading", &renderer.flatShading);
+    ImGui::Text("Shading:");
+    ImGui::SameLine();
+    ImGui::RadioButton("None", (int*)&renderer.shading, (int)None);
+    ImGui::SameLine();
+    ImGui::RadioButton("Flat", (int*)&renderer.shading, (int)Flat);
+    ImGui::SameLine();
+    ImGui::RadioButton("Smooth", (int*)&renderer.shading, (int)Smooth);
 
-    ImGui::Checkbox("Smooth shading", &renderer.smoothShading);
+    if (renderer.shading != None)
+    {
+        ImGui::SliderFloat("Ambient", &renderer.ambientFactor, 0.0f, 1.0f);
+    }
+
+    if (renderer.shading == Smooth)
+    {
+        ImGui::SliderFloat("Lambert factor", &renderer.lambertFactor, 0.0f, 1.0f);
+        ImGui::SliderFloat("Spec 1", &renderer.spec1, 0.0f, 60.0f);
+        ImGui::SliderFloat("Spec 2", &renderer.spec2, 0.0f, 2.0f);
+    }
 
     ImGui::End();
 }

@@ -126,6 +126,7 @@
 		<Unit filename="include/ShaderProgram.hpp">
 			<Option virtualFolder="OpenGL Headers/" />
 		</Unit>
+		<Unit filename="include/Shading.hpp" />
 		<Unit filename="include/Utils.hpp" />
 		<Unit filename="include/Vertex.hpp" />
 		<Unit filename="main.cpp" />

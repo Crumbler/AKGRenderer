@@ -13,14 +13,19 @@ Renderer::Renderer()
     zBuffer = nullptr;
     model = nullptr;
 
-    backfaceCulling = false;
-    flatShading = false;
-    smoothShading = false;
+    backfaceCulling = true;
 
     FOV = 90.0f;
     camPos = glm::vec3(0.0f, 0.0f, 1.0f);
     modelScale = glm::vec3(1.0f);
     lightDir = glm::vec2(0.0f);
+
+    ambientFactor = 0.1f;
+    lambertFactor = 0.4f;
+    spec1 = 20.0f;
+    spec2 = 0.5f;
+
+    shading = None;
 }
 
 const void* Renderer::Render(int width, int height, bool sizeChanged)
@@ -105,13 +110,17 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
     vb.n = nb;
     vc.n = nc;
 
-    if (flatShading && !smoothShading)
+    va.posView = a;
+    vb.posView = b;
+    vc.posView = c;
+
+    if (shading == Flat)
     {
         const float l1 = calcLighting(na),
             l2 = calcLighting(nb),
             l3 = calcLighting(nc);
 
-        const float totalLighting = std::clamp((l1 + l2 + l3) / 3.0f + 0.1f, 0.0f, 1.0f);
+        const float totalLighting = std::clamp((l1 + l2 + l3) / 3.0f + ambientFactor, 0.0f, 1.0f);
 
         col = Color::flat(totalLighting);
     }
@@ -182,9 +191,7 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
     {
         const float ratio = (vb.v.y - va.v.y) / (vc.v.y - va.v.y);
 
-        Vertex newV;
-
-        newV.v = va.v + (vc.v - va.v) * ratio;
+        Vertex newV = Vertex::Combine(va, vc, ratio);
 
         if (vb.v.x < newV.v.x)
         {
@@ -241,10 +248,12 @@ void Renderer::drawTopTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
 
             Color pCol = col;
 
-            if (smoothShading)
+            if (shading == Smooth)
             {
-                const glm::vec3 n = Interpolate(br, va.n, vb.n, vc.n);
-                const float l = calcLighting(n);
+                const glm::vec3 n = InterpolateNormals(br, va.n, vb.n, vc.n),
+                    posView = Interpolate(br, va.posView, vb.posView, vc.posView);
+
+                const float l = calcPhongShading(posView, n);
                 pCol = Color::mul(col, l);
             }
 
@@ -298,10 +307,12 @@ void Renderer::drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
 
             Color pCol = col;
 
-            if (smoothShading)
+            if (shading == Smooth)
             {
-                const glm::vec3 n = Interpolate(br, va.n, vb.n, vc.n);
-                const float l = calcLighting(n);
+                const glm::vec3 n = InterpolateNormals(br, va.n, vb.n, vc.n),
+                    posView = Interpolate(br, va.posView, vb.posView, vc.posView);
+
+                const float l = calcPhongShading(posView, n);
                 pCol = Color::mul(col, l);
             }
 
@@ -460,10 +471,34 @@ float Renderer::calcLighting(const glm::vec3 n)
     return std::clamp(res, 0.0f, 1.0f);
 }
 
+float Renderer::calcPhongShading(const glm::vec3 p, const glm::vec3 n)
+{
+    const float l1 = glm::dot(lightVecView, -n) * lambertFactor,
+        l2 = ambientFactor;
+
+    const glm::vec3 eyeDir = glm::normalize(p),
+        reflRay = glm::reflect(lightVecView, n);
+
+    float kSp = -glm::dot(eyeDir, reflRay);
+
+    kSp = std::max(0.0f, kSp);
+
+    kSp = std::pow(kSp, spec1);
+
+    kSp *= spec2;
+
+    return std::clamp(l1 + l2 + kSp, 0.0f, 1.0f);
+}
+
 template<typename T>
 T Renderer::Interpolate(const glm::vec3 br, const T a, const T b, const T c)
 {
     return a * br.x + b * br.y + c * br.z;
+}
+
+glm::vec3 Renderer::InterpolateNormals(const glm::vec3 br, const glm::vec3 a, const glm::vec3 b, const glm::vec3 c)
+{
+    return glm::normalize(a * br.x + b * br.y + c * br.z);
 }
 
 bool Renderer::canCull(const glm::vec3 a, const glm::vec3 b, const glm::vec3 c)
