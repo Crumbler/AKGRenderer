@@ -29,6 +29,9 @@ class Renderer
         void drawTriangle(Vertex va, Vertex vb, Vertex vc);
         void drawTopTriangle(Vertex va, Vertex vb, Vertex vc, Color col);
         void drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, Color col);
+        void drawFragment(const glm::vec3 br, const int x, const int y,
+                           const Vertex va, const Vertex vb,
+                          const Vertex vc, const Color col);
         void renderModel();
         void setPixel(const int x, const int y, const float z, const Color c);
         template<typename T> static T Interpolate(const glm::vec3 br, const T a, const T b, const T c);

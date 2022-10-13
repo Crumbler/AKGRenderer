@@ -244,20 +244,7 @@ void Renderer::drawTopTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            const float z = Interpolate(br, a.z, b.z, c.z);
-
-            Color pCol = col;
-
-            if (shading == Smooth)
-            {
-                const glm::vec3 n = InterpolateNormals(br, va.n, vb.n, vc.n),
-                    posView = Interpolate(br, va.posView, vb.posView, vc.posView);
-
-                const float l = calcPhongShading(posView, n);
-                pCol = Color::mul(col, l);
-            }
-
-            setPixel(x, y, z, pCol);
+            drawFragment(br, x, y, va, vb, vc, col);
 
             br += brScanStep;
         }
@@ -303,20 +290,7 @@ void Renderer::drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            const float z = Interpolate(br, a.z, b.z, c.z);
-
-            Color pCol = col;
-
-            if (shading == Smooth)
-            {
-                const glm::vec3 n = InterpolateNormals(br, va.n, vb.n, vc.n),
-                    posView = Interpolate(br, va.posView, vb.posView, vc.posView);
-
-                const float l = calcPhongShading(posView, n);
-                pCol = Color::mul(col, l);
-            }
-
-            setPixel(x, y, z, pCol);
+            drawFragment(br, x, y, va, vb, vc, col);
 
             br += brScanStep;
         }
@@ -326,14 +300,24 @@ void Renderer::drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
     }
 }
 
-void Renderer::drawLine(glm::vec4 a, glm::vec4 b)
+void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
+                            const Vertex va, const Vertex vb, const Vertex vc,
+                            const Color col)
 {
-    if (std::max(std::abs(a.z), std::abs(b.z)) > 1.0f)
+    const float z = Interpolate(br, va.v.z, vb.v.z, vc.v.z);
+
+    Color pCol = col;
+
+    if (shading == Smooth)
     {
-        return;
+        const glm::vec3 n = InterpolateNormals(br, va.n, vb.n, vc.n),
+            posView = Interpolate(br, va.posView, vb.posView, vc.posView);
+
+        const float l = calcPhongShading(posView, n);
+        pCol = Color::mul(col, l);
     }
 
-    drawLine(a.x, a.y, b.x, b.y);
+    setPixel(x, y, z, pCol);
 }
 
 void Renderer::setPixel(const int x, const int y, const float z, const Color c)
