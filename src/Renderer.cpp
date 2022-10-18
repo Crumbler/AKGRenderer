@@ -308,7 +308,7 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
                             const Color col)
 {
     const float z = Interpolate(br, va.v.z, vb.v.z, vc.v.z);
-    const glm::vec2 t = Interpolate(br, va.t, vb.t, vc.t);
+    glm::vec2 t = Interpolate(br, va.t / va.v.z, vb.t / vb.v.z, vc.t / vc.v.z) * z;
 
     Color pCol = texDiffuse->getCol(t.x, t.y);
 
