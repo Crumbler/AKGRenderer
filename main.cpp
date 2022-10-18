@@ -91,9 +91,12 @@ void GUI_Main(GLFWwindow *window)
         sizeChanged = false;
     }
 
+    ImGui::SameLine();
+
     if (ImGui::Button("Load model"))
     {
         renderer.LoadModel("model.obj");
+        renderer.LoadDiffuse("diffuse.png");
     }
 
     ImGui::SliderFloat("FOV", &renderer.FOV, 0.0f, 180.0f);

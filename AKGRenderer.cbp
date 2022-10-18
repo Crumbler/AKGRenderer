@@ -127,8 +127,10 @@
 			<Option virtualFolder="OpenGL Headers/" />
 		</Unit>
 		<Unit filename="include/Shading.hpp" />
+		<Unit filename="include/Texture.hpp" />
 		<Unit filename="include/Utils.hpp" />
 		<Unit filename="include/Vertex.hpp" />
+		<Unit filename="include/lodepng.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="shaders/fDisplayShader.txt">
 			<Option virtualFolder="OpenGL Shaders/" />
@@ -157,8 +159,10 @@
 		<Unit filename="src/ShaderProgram.cpp">
 			<Option virtualFolder="OpenGL Sources/" />
 		</Unit>
+		<Unit filename="src/Texture.cpp" />
 		<Unit filename="src/Utils.cpp" />
 		<Unit filename="src/Vertex.cpp" />
+		<Unit filename="src/lodepng.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

@@ -70,6 +70,10 @@ void Model::getVertices(const Face f, Vertex& a, Vertex& b, Vertex& c)
     a.n = normals[f.normals[0]];
     b.n = normals[f.normals[1]];
     c.n = normals[f.normals[2]];
+
+    a.t = uvs[f.uvs[0]];
+    b.t = uvs[f.uvs[1]];
+    c.t = uvs[f.uvs[2]];
 }
 
 void Model::adjustIndices()
@@ -86,6 +90,9 @@ void Model::adjustIndices()
 
             glm::ivec3& n = f.normals;
             n[i] = n[i] > 0 ? n[i] - 1 : szN + n[i];
+
+            glm::ivec3& t = f.uvs;
+            t[i] = t[i] > 0 ? t[i] - 1 : szN + t[i];
         }
     }
 }

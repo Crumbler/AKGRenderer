@@ -4,6 +4,7 @@
 #include "Model.hpp"
 #include "Vertex.hpp"
 #include "Shading.hpp"
+#include "Texture.hpp"
 #include <string>
 
 class Renderer
@@ -13,6 +14,7 @@ class Renderer
 
         const void* Render(int width, int height, bool sizeChanged);
         void LoadModel(const std::string& filename);
+        void LoadDiffuse(const std::string& filename);
 
         float FOV, ambientFactor, lambertFactor, spec1, spec2;
         bool backfaceCulling;
@@ -24,8 +26,6 @@ class Renderer
 
     private:
         int index(int i, int j) const;
-        void drawLine(float x0, float y0, float x1, float y1);
-        void drawLine(glm::vec4 a, glm::vec4 b);
         void drawTriangle(Vertex va, Vertex vb, Vertex vc);
         void drawTopTriangle(Vertex va, Vertex vb, Vertex vc, Color col);
         void drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, Color col);
@@ -52,4 +52,5 @@ class Renderer
         int width, height, culledFaces;
         constexpr static float zNear = 0.1f, zFar = 100.0f;
         Model *model;
+        Texture *texDiffuse;
 };

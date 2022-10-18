@@ -26,6 +26,8 @@ Renderer::Renderer()
     spec2 = 0.5f;
 
     shading = None;
+
+    texDiffuse = nullptr;
 }
 
 const void* Renderer::Render(int width, int height, bool sizeChanged)
@@ -55,6 +57,7 @@ const void* Renderer::Render(int width, int height, bool sizeChanged)
     }
 
     memset((void*)buffer, 0, width * height * 3);
+
     for (int i = 0; i < width * height; ++i)
     {
         zBuffer[i] = 1.0f;
@@ -305,8 +308,9 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
                             const Color col)
 {
     const float z = Interpolate(br, va.v.z, vb.v.z, vc.v.z);
+    const glm::vec2 t = Interpolate(br, va.t, vb.t, vc.t);
 
-    Color pCol = col;
+    Color pCol = texDiffuse->getCol(t.x, t.y);
 
     if (shading == Smooth)
     {
@@ -314,7 +318,7 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
             posView = Interpolate(br, va.posView, vb.posView, vc.posView);
 
         const float l = calcPhongShading(posView, n);
-        pCol = Color::mul(col, l);
+        pCol = Color::mul(pCol, l);
     }
 
     setPixel(x, y, z, pCol);
@@ -418,30 +422,23 @@ void Renderer::genViewportMatrix()
 
 void Renderer::LoadModel(const std::string& filename)
 {
+    if (model != nullptr)
+    {
+        delete model;
+    }
+
     model = new Model(filename);
 }
 
-void Renderer::drawLine(float x0, float y0, float x1, float y1)
+void Renderer::LoadDiffuse(const std::string& filename)
 {
-    float dx = x1 - x0,
-        dy = y1 - y0;
-
-    const float step = std::max(abs(dx), abs(dy));
-
-    dx /= step;
-    dy /= step;
-
-    for (int i = 0, iStep = (int)step; i < iStep; ++i, x0 += dx, y0 += dy)
+    if (texDiffuse != nullptr)
     {
-        if (x0 < 0.0f || x0 >= width || y0 < 0.0f || y0 >= height)
-        {
-            continue;
-        }
-
-        setPixel(x0, y0, 0.0f, Color::white());
+        delete texDiffuse;
     }
-}
 
+    texDiffuse = new Texture("diffuse.png");
+}
 
 int Renderer::index(int i, int j) const
 {
