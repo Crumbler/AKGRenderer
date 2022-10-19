@@ -81,8 +81,6 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
 {
     using std::swap;
 
-    Color col = Color::white();
-
     glm::vec4 a = glm::vec4(va.v, 1.0f),
         b = glm::vec4(vb.v, 1.0f),
         c = glm::vec4(vc.v, 1.0f);
@@ -119,15 +117,15 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
     vb.posView = b;
     vc.posView = c;
 
+    float brightness = 1.0f;
+
     if (shading == Flat)
     {
         const float l1 = calcLighting(na),
             l2 = calcLighting(nb),
             l3 = calcLighting(nc);
 
-        const float totalLighting = std::clamp((l1 + l2 + l3) / 3.0f + ambientFactor, 0.0f, 1.0f);
-
-        col = Color::flat(totalLighting);
+        brightness = std::clamp((l1 + l2 + l3) / 3.0f + ambientFactor, 0.0f, 1.0f);
     }
 
     if (backfaceCulling && canCull(a, b, c))
@@ -181,7 +179,7 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
         {
             swap(va, vb);
         }
-        drawBottomTriangle(va, vb, vc, col);
+        drawBottomTriangle(va, vb, vc, brightness);
     }
     else if (vb.v.y == vc.v.y)
     {
@@ -190,7 +188,7 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
         {
             swap(vb, vc);
         }
-        drawTopTriangle(va, vb, vc, col);
+        drawTopTriangle(va, vb, vc, brightness);
     }
     else // general triangle
     {
@@ -200,17 +198,17 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
         if (vb.v.x < newX)
         {
             // left triangle
-            drawLeftTriangle(va, vb, vc, col);
+            drawLeftTriangle(va, vb, vc, brightness);
         }
         else
         {
             // right triangle
-            drawRightTriangle(va, vb, vc, col);
+            drawRightTriangle(va, vb, vc, brightness);
         }
     }
 }
 
-void Renderer::drawLeftTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
+void Renderer::drawLeftTriangle(Vertex va, Vertex vb, Vertex vc, const float brightness)
 {
     const glm::vec3& a = va.v,
         b = vb.v,
@@ -245,7 +243,7 @@ void Renderer::drawLeftTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            drawFragment(br, x, y, va, vb, vc, col);
+            drawFragment(br, x, y, va, vb, vc, brightness);
 
             br += brScanStep;
         }
@@ -283,7 +281,7 @@ void Renderer::drawLeftTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            drawFragment(br, x, y, va, vb, vc, col);
+            drawFragment(br, x, y, va, vb, vc, brightness);
 
             br += brScanStep;
         }
@@ -293,7 +291,7 @@ void Renderer::drawLeftTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
     }
 }
 
-void Renderer::drawRightTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
+void Renderer::drawRightTriangle(Vertex va, Vertex vb, Vertex vc, const float brightness)
 {
     const glm::vec3& a = va.v,
         b = vb.v,
@@ -328,7 +326,7 @@ void Renderer::drawRightTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            drawFragment(br, x, y, va, vb, vc, col);
+            drawFragment(br, x, y, va, vb, vc, brightness);
 
             br += brScanStep;
         }
@@ -366,7 +364,7 @@ void Renderer::drawRightTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            drawFragment(br, x, y, va, vb, vc, col);
+            drawFragment(br, x, y, va, vb, vc, brightness);
 
             br += brScanStep;
         }
@@ -376,7 +374,7 @@ void Renderer::drawRightTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
     }
 }
 
-void Renderer::drawTopTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
+void Renderer::drawTopTriangle(Vertex va, Vertex vb, Vertex vc, const float brightness)
 {
     const glm::vec3& a = va.v,
         b = vb.v,
@@ -411,7 +409,7 @@ void Renderer::drawTopTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            drawFragment(br, x, y, va, vb, vc, col);
+            drawFragment(br, x, y, va, vb, vc, brightness);
 
             br += brScanStep;
         }
@@ -421,7 +419,7 @@ void Renderer::drawTopTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
     }
 }
 
-void Renderer::drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
+void Renderer::drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, const float brightness)
 {
     const glm::vec3& a = va.v,
         b = vb.v,
@@ -456,7 +454,7 @@ void Renderer::drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            drawFragment(br, x, y, va, vb, vc, col);
+            drawFragment(br, x, y, va, vb, vc, brightness);
 
             br += brScanStep;
         }
@@ -468,7 +466,7 @@ void Renderer::drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
 
 void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
                             const Vertex va, const Vertex vb, const Vertex vc,
-                            const Color col)
+                            const float brightness)
 {
     const float z = Interpolate(br, va.v.z, vb.v.z, vc.v.z);
     glm::vec2 t;
@@ -485,13 +483,21 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
 
     Color pCol = texDiffuse->getCol(t.x, t.y);
 
-    if (shading == Smooth)
+    switch (shading)
     {
+    case None:
+        break;
+    case Flat:
+        pCol = Color::mul(pCol, brightness);
+        break;
+
+    case Smooth:
         const glm::vec3 n = InterpolateNormals(br, va.n, vb.n, vc.n),
             posView = Interpolate(br, va.posView, vb.posView, vc.posView);
 
         const float l = calcPhongShading(posView, n);
         pCol = Color::mul(pCol, l);
+        break;
     }
 
     setPixel(x, y, z, pCol);

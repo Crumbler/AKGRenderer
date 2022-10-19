@@ -27,13 +27,13 @@ class Renderer
     private:
         int index(int i, int j) const;
         void drawTriangle(Vertex va, Vertex vb, Vertex vc);
-        void drawTopTriangle(Vertex va, Vertex vb, Vertex vc, Color col);
-        void drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, Color col);
-        void drawLeftTriangle(Vertex va, Vertex vb, Vertex vc, Color col);
-        void drawRightTriangle(Vertex va, Vertex vb, Vertex vc, Color col);
+        void drawTopTriangle(Vertex va, Vertex vb, Vertex vc, const float brightness);
+        void drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, const float brightness);
+        void drawLeftTriangle(Vertex va, Vertex vb, Vertex vc, const float brightness);
+        void drawRightTriangle(Vertex va, Vertex vb, Vertex vc, const float brightness);
         void drawFragment(const glm::vec3 br, const int x, const int y,
                            const Vertex va, const Vertex vb,
-                          const Vertex vc, const Color col);
+                          const Vertex vc, const float brightness);
         void renderModel();
         void setPixel(const int x, const int y, const float z, const Color c);
         template<typename T> static T Interpolate(const glm::vec3 br, const T a, const T b, const T c);
