@@ -29,6 +29,8 @@ class Renderer
         void drawTriangle(Vertex va, Vertex vb, Vertex vc);
         void drawTopTriangle(Vertex va, Vertex vb, Vertex vc, Color col);
         void drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, Color col);
+        void drawLeftTriangle(Vertex va, Vertex vb, Vertex vc, Color col);
+        void drawRightTriangle(Vertex va, Vertex vb, Vertex vc, Color col);
         void drawFragment(const glm::vec3 br, const int x, const int y,
                            const Vertex va, const Vertex vb,
                           const Vertex vc, const Color col);

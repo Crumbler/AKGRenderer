@@ -193,21 +193,184 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
     else // general triangle
     {
         const float ratio = (vb.v.y - va.v.y) / (vc.v.y - va.v.y);
+        const float newX = (1.0f - ratio) * va.v.x + ratio * vc.v.x;
 
-        Vertex newV = Vertex::Combine(va, vc, ratio);
-
-        if (vb.v.x < newV.v.x)
+        if (vb.v.x < newX)
         {
-            // new vertex on the right edge
-            drawTopTriangle(va, vb, newV, col);
-            drawBottomTriangle(vb, newV, vc, col);
+            // left triangle
+            drawLeftTriangle(va, vb, vc, col);
         }
         else
         {
-            // new vertex on the left edge
-            drawTopTriangle(va, newV, vb, col);
-            drawBottomTriangle(newV, vb, vc, col);
+            // right triangle
+            drawRightTriangle(va, vb, vc, col);
         }
+    }
+}
+
+void Renderer::drawLeftTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
+{
+    const glm::vec3& a = va.v,
+        b = vb.v,
+        c = vc.v;
+
+    float mLeft = (b.x - a.x) / (b.y - a.y),
+        mRight = (c.x - a.x) / (c.y - a.y);
+
+    glm::vec3 brLeft(1.0f, 0.0f, 0.0f),
+        brRight(1.0f, 0.0f, 0.0f);
+
+    glm::vec3 brStepLeft = glm::vec3(-1.0f, 1.0f, 0.0f) / (b.y - a.y);
+    const glm::vec3 brStepRight = glm::vec3(-1.0f, 0.0f, 1.0f) / (c.y - a.y);
+
+    int yStart = std::ceil(a.y - 0.5f),
+        yEnd = std::ceil(b.y - 0.5f);
+
+    brLeft += brStepLeft * (yStart - a.y + 0.5f);
+    brRight += brStepRight * (yStart - a.y + 0.5f);
+
+    for (int y = yStart; y < yEnd; ++y)
+    {
+        const float pxLeft = mLeft * (y - a.y + 0.5f) + a.x,
+            pxRight = mRight * (y - a.y + 0.5f) + a.x;
+
+        const int xStart = std::ceil(pxLeft - 0.5f),
+            xEnd = std::ceil(pxRight - 0.5f);
+
+        const glm::vec3 brScanStep = (brRight - brLeft) / (pxRight - pxLeft);
+
+        glm::vec3 br = brLeft + brScanStep * (xStart - pxLeft + 0.5f);
+
+        for (int x = xStart; x < xEnd; ++x)
+        {
+            drawFragment(br, x, y, va, vb, vc, col);
+
+            br += brScanStep;
+        }
+
+        brLeft += brStepLeft;
+        brRight += brStepRight;
+    }
+
+    brLeft = glm::vec3(0.0f, 1.0f, 0.0f);
+
+    const float rt = (b.y - a.y) / (c.y - a.y);
+    brRight = glm::vec3(1.0f - rt, 0.0f, rt);
+
+    brStepLeft = glm::vec3(0.0f, -1.0f, 1.0f) / (c.y - b.y);
+
+    yStart = yEnd;
+    yEnd = std::ceil(c.y - 0.5f);
+
+    mLeft = (c.x - b.x) / (c.y - b.y);
+
+    brLeft += brStepLeft * (yStart - b.y + 0.5f);
+    brRight += brStepRight * (yStart - b.y + 0.5f);
+
+    for (int y = yStart; y < yEnd; ++y)
+    {
+        const float pxLeft = mLeft * (y - b.y + 0.5f) + b.x,
+            pxRight = mRight * (y - a.y + 0.5f) + a.x;
+
+        const int xStart = std::ceil(pxLeft - 0.5f),
+            xEnd = std::ceil(pxRight - 0.5f);
+
+        const glm::vec3 brScanStep = (brRight - brLeft) / (pxRight - pxLeft);
+
+        glm::vec3 br = brLeft + brScanStep * (xStart - pxLeft + 0.5f);
+
+        for (int x = xStart; x < xEnd; ++x)
+        {
+            drawFragment(br, x, y, va, vb, vc, col);
+
+            br += brScanStep;
+        }
+
+        brLeft += brStepLeft;
+        brRight += brStepRight;
+    }
+}
+
+void Renderer::drawRightTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
+{
+    const glm::vec3& a = va.v,
+        b = vb.v,
+        c = vc.v;
+
+    const float mLeft = (c.x - a.x) / (c.y - a.y);
+    float mRight = (b.x - a.x) / (b.y - a.y);
+
+    glm::vec3 brLeft(1.0f, 0.0f, 0.0f),
+        brRight(1.0f, 0.0f, 0.0f);
+
+    const glm::vec3 brStepLeft = glm::vec3(-1.0f, 0.0f, 1.0f) / (c.y - a.y);
+    glm::vec3 brStepRight = glm::vec3(-1.0f, 1.0f, 0.0f) / (b.y - a.y);
+
+    int yStart = std::ceil(a.y - 0.5f),
+        yEnd = std::ceil(b.y - 0.5f);
+
+    brLeft += brStepLeft * (yStart - a.y + 0.5f);
+    brRight += brStepRight * (yStart - a.y + 0.5f);
+
+    for (int y = yStart; y < yEnd; ++y)
+    {
+        const float pxLeft = mLeft * (y - a.y + 0.5f) + a.x,
+            pxRight = mRight * (y - a.y + 0.5f) + a.x;
+
+        const int xStart = std::ceil(pxLeft - 0.5f),
+            xEnd = std::ceil(pxRight - 0.5f);
+
+        const glm::vec3 brScanStep = (brRight - brLeft) / (pxRight - pxLeft);
+
+        glm::vec3 br = brLeft + brScanStep * (xStart - pxLeft + 0.5f);
+
+        for (int x = xStart; x < xEnd; ++x)
+        {
+            drawFragment(br, x, y, va, vb, vc, col);
+
+            br += brScanStep;
+        }
+
+        brLeft += brStepLeft;
+        brRight += brStepRight;
+    }
+
+    brRight = glm::vec3(0.0f, 1.0f, 0.0f);
+
+    const float rt = (b.y - a.y) / (c.y - a.y);
+    brLeft = glm::vec3(1.0f - rt, 0.0f, rt);
+
+    brStepRight = glm::vec3(0.0f, -1.0f, 1.0f) / (c.y - b.y);
+
+    yStart = yEnd;
+    yEnd = std::ceil(c.y - 0.5f);
+
+    mRight = (c.x - b.x) / (c.y - b.y);
+
+    brLeft += brStepLeft * (yStart - b.y + 0.5f);
+    brRight += brStepRight * (yStart - b.y + 0.5f);
+
+    for (int y = yStart; y < yEnd; ++y)
+    {
+        const float pxLeft = mLeft * (y - a.y + 0.5f) + a.x,
+            pxRight = mRight * (y - b.y + 0.5f) + b.x;
+
+        const int xStart = std::ceil(pxLeft - 0.5f),
+            xEnd = std::ceil(pxRight - 0.5f);
+
+        const glm::vec3 brScanStep = (brRight - brLeft) / (pxRight - pxLeft);
+
+        glm::vec3 br = brLeft + brScanStep * (xStart - pxLeft + 0.5f);
+
+        for (int x = xStart; x < xEnd; ++x)
+        {
+            drawFragment(br, x, y, va, vb, vc, col);
+
+            br += brScanStep;
+        }
+
+        brLeft += brStepLeft;
+        brRight += brStepRight;
     }
 }
 
@@ -221,7 +384,6 @@ void Renderer::drawTopTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
         mRight = (c.x - a.x) / (c.y - a.y);
 
     glm::vec3 brLeft(1.0f, 0.0f, 0.0f),
-        brTop(1.0f, 0.0f, 0.0f),
         brRight(1.0f, 0.0f, 0.0f);
 
     const glm::vec3 brStepLeft = glm::vec3(-1.0f, 1.0f, 0.0f) / (c.y - a.y),
@@ -267,11 +429,10 @@ void Renderer::drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, Color col)
         mRight = (c.x - b.x) / (c.y - a.y);
 
     glm::vec3 brLeft(1.0f, 0.0f, 0.0f),
-        brBottom(0.0f, 0.0f, 1.0f),
         brRight(0.0f, 1.0f, 0.0f);
 
-    const glm::vec3 brStepLeft = (brBottom - brLeft) / (c.y - a.y),
-        brStepRight = (brBottom - brRight) / (c.y - a.y);
+    const glm::vec3 brStepLeft = glm::vec3(-1.0f, 0.0f, 1.0f) / (c.y - a.y),
+        brStepRight = glm::vec3(0.0f, -1.0f, 1.0f) / (c.y - a.y);
 
     const int yStart = std::ceil(a.y - 0.5f),
         yEnd = std::ceil(c.y - 0.5f);
@@ -308,7 +469,8 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
                             const Color col)
 {
     const float z = Interpolate(br, va.v.z, vb.v.z, vc.v.z);
-    glm::vec2 t = Interpolate(br, va.t / va.v.z, vb.t / vb.v.z, vc.t / vc.v.z) * z;
+    const float dv = Interpolate(br, 1.0f / va.posView.z, 1.0f / vb.posView.z, 1.0f / vc.posView.z);
+    const glm::vec2 t = Interpolate(br, va.t / va.posView.z, vb.t / vb.posView.z, vc.t / vc.posView.z) / dv;
 
     Color pCol = texDiffuse->getCol(t.x, t.y);
 

@@ -25,6 +25,9 @@ Texture::Texture(const std::string& filename)
 
 Color Texture::getCol(float x, float y)
 {
+    x = std::clamp(x, 0.0f, 1.0f);
+    y = std::clamp(y, 0.0f, 1.0f);
+
     const int newX = round(x * (width - 1)),
         newY = round(y * (height - 1));
 
