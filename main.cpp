@@ -105,6 +105,11 @@ void GUI_Main(GLFWwindow *window)
 
     ImGui::InputTextWithHint("Input model name", "Model name", modelName, IM_ARRAYSIZE(modelName));
 
+    if (ImGui::Button("Reset params"))
+    {
+        renderer.ResetParams();
+    }
+
     ImGui::SliderFloat("FOV", &renderer.FOV, 0.0f, 180.0f);
 
     ImGui::SliderFloat3("Camera pos", &renderer.camPos.x, -5.0f, 5.0f);

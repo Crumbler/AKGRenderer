@@ -12,11 +12,22 @@ Renderer::Renderer()
     buffer = nullptr;
     zBuffer = nullptr;
     model = nullptr;
+    texDiffuse = nullptr;
 
+    ResetParams();
+}
+
+void Renderer::ResetParams()
+{
     backfaceCulling = true;
+    perspectiveCorrection = true;
+
+    shading = None;
 
     FOV = 90.0f;
     camPos = glm::vec3(0.0f, 0.0f, 1.0f);
+    modelPos = glm::vec3(0.0f);
+    modelRot = glm::vec3(0.0f);
     modelScale = glm::vec3(1.0f);
     lightDir = glm::vec2(0.0f);
 
@@ -24,12 +35,6 @@ Renderer::Renderer()
     lambertFactor = 0.4f;
     spec1 = 20.0f;
     spec2 = 0.5f;
-
-    shading = None;
-
-    texDiffuse = nullptr;
-
-    perspectiveCorrection = true;
 }
 
 const void* Renderer::Render(int width, int height, bool sizeChanged)

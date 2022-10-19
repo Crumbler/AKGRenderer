@@ -11,6 +11,7 @@ class Renderer
 {
     public:
         Renderer();
+        void ResetParams();
 
         const void* Render(int width, int height, bool sizeChanged);
         void LoadModel(const std::string& filename);
