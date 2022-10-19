@@ -24,6 +24,15 @@ struct Color
                      std::round((float)c.b * f));
     }
 
+    static constexpr Color combine(const Color a, const Color b)
+    {
+        const int nr = std::min(255, (int)a.r + (int)b.r),
+            ng = std::min(255, (int)a.g + (int)b.g),
+            nb = std::min(255, (int)a.b + (int)b.b);
+
+        return Color(nr, ng, nb);
+    }
+
     constexpr Color(uint8_t r, uint8_t g, uint8_t b)
         : r(r), g(g), b(b) { }
 

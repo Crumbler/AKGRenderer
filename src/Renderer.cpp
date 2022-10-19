@@ -13,6 +13,7 @@ Renderer::Renderer()
     zBuffer = nullptr;
     model = nullptr;
     texDiffuse = nullptr;
+    texSpecular = nullptr;
 
     ResetParams();
 }
@@ -492,6 +493,7 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
     {
     case None:
         break;
+
     case Flat:
         pCol = Color::mul(pCol, brightness);
         break;
@@ -501,9 +503,13 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
             posView = Interpolate(br, va.posView, vb.posView, vc.posView);
 
         const float l = calcPhongShading(posView, n);
-        pCol = Color::mul(pCol, l);
+        const Color cSpec = Color::mul(texSpecular->getCol(t.x, t.y), l);
+
+        pCol = Color::combine(pCol, cSpec);
         break;
     }
+
+
 
     setPixel(x, y, z, pCol);
 }
@@ -622,6 +628,16 @@ void Renderer::LoadDiffuse(const std::string& filename)
     }
 
     texDiffuse = new Texture("diffuse" + filename + ".png");
+}
+
+void Renderer::LoadSpecular(const std::string& filename)
+{
+    if (texSpecular != nullptr)
+    {
+        delete texSpecular;
+    }
+
+    texSpecular = new Texture("specular" + filename + ".png");
 }
 
 int Renderer::index(int i, int j) const

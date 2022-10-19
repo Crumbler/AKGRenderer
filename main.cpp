@@ -99,6 +99,7 @@ void GUI_Main(GLFWwindow *window)
     {
         renderer.LoadModel(modelName);
         renderer.LoadDiffuse(modelName);
+        renderer.LoadSpecular(modelName);
     }
 
     ImGui::SameLine();
