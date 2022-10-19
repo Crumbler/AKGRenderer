@@ -57,15 +57,21 @@ Model::Model(const std::string& filename)
 
     centerModel();
 
+    calcTangents();
+
     printf("Loaded model. Vertices: %d, faces: %d\n", vCount, fCount);
     printf("Texture coords: %d, normals: %d\n", tCount, nCount);
 }
 
 void Model::getVertices(const Face f, Vertex& a, Vertex& b, Vertex& c)
 {
-    a.v = vertices[f.vertices[0]];
-    b.v = vertices[f.vertices[1]];
-    c.v = vertices[f.vertices[2]];
+    const int vInd0 = f.vertices[0],
+        vInd1 = f.vertices[1],
+        vInd2 = f.vertices[2];
+
+    a.v = vertices[vInd0];
+    b.v = vertices[vInd1];
+    c.v = vertices[vInd2];
 
     a.n = normals[f.normals[0]];
     b.n = normals[f.normals[1]];
@@ -74,6 +80,10 @@ void Model::getVertices(const Face f, Vertex& a, Vertex& b, Vertex& c)
     a.t = uvs[f.uvs[0]];
     b.t = uvs[f.uvs[1]];
     c.t = uvs[f.uvs[2]];
+
+    a.tangent = tangents[vInd0];
+    b.tangent = tangents[vInd1];
+    c.tangent = tangents[vInd2];
 }
 
 void Model::adjustIndices()
@@ -204,6 +214,51 @@ void Model::centerModel()
     for (glm::vec3& v : vertices)
     {
         v -= center;
+    }
+}
+
+void Model::calcTangents()
+{
+    tangents = std::vector<glm::vec3>(vertices.size(), glm::vec3(0.0f));
+
+    for (const Face fc : faces)
+    {
+        const int vInd0 = fc.vertices[0],
+            vInd1 = fc.vertices[1],
+            vInd2 = fc.vertices[2];
+
+        const glm::vec3 v0 = vertices[vInd0],
+            v1 = vertices[vInd1],
+            v2 = vertices[vInd2];
+
+        const glm::vec2 uv0 = uvs[fc.uvs[0]],
+            uv1 = uvs[fc.uvs[1]],
+            uv2 = uvs[fc.uvs[2]];
+
+        const glm::vec3 edge1 = v1 - v0,
+            edge2 = v2 - v0;
+
+        const float deltaU1 = uv1.x - uv0.x,
+            deltaV1 = uv1.y - uv0.y,
+            deltaU2 = uv2.x - uv0.x,
+            deltaV2 = uv2.y - uv0.y;
+
+        const float f = 1.0f / (deltaU1 * deltaV2 - deltaU2 * deltaV1);
+
+        glm::vec3 tangent, bitangent;
+
+        tangent.x = f * (deltaV2 * edge1.x - deltaV1 * edge2.x);
+        tangent.y = f * (deltaV2 * edge1.y - deltaV1 * edge2.y);
+        tangent.z = f * (deltaV2 * edge1.z - deltaV1 * edge2.z);
+
+        tangents[vInd0] += tangent;
+        tangents[vInd1] += tangent;
+        tangents[vInd2] += tangent;
+    }
+
+    for (glm::vec3& tangent : tangents)
+    {
+        tangent = glm::normalize(tangent);
     }
 }
 

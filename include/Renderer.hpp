@@ -17,6 +17,7 @@ class Renderer
         void LoadModel(const std::string& filename);
         void LoadDiffuse(const std::string& filename);
         void LoadSpecular(const std::string& filename);
+        void LoadNormal(const std::string& filename);
 
         float FOV, ambientFactor, lambertFactor, spec1, spec2;
         bool backfaceCulling, perspectiveCorrection;
@@ -47,6 +48,7 @@ class Renderer
         void genModelMatrix();
         void genLightVec();
         float calcLighting(const glm::vec3 n);
+        glm::vec3 calcNormal(const glm::vec3 n, glm::vec3 tangent, const glm::vec2 t);
         float calcPhongShading(const glm::vec3 p, const glm::vec3 n);
 
         glm::mat4 modelMat, viewMat, projMat, viewportMat;
@@ -56,5 +58,5 @@ class Renderer
         int width, height, culledFaces;
         constexpr static float zNear = 0.1f, zFar = 100.0f;
         Model *model;
-        Texture *texDiffuse, *texSpecular;
+        Texture *texDiffuse, *texSpecular, *texNormal;
 };

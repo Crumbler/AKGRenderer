@@ -4,5 +4,8 @@ enum Shading : int
 {
     None,
     Flat,
-    Smooth
+    Smooth,
+    SmoothN1,
+    SmoothN2,
+    Spec
 };

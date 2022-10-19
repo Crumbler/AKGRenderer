@@ -91,6 +91,10 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
         b = glm::vec4(vb.v, 1.0f),
         c = glm::vec4(vc.v, 1.0f);
 
+    glm::vec4 tangA(va.tangent, 0.0f),
+        tangB(vb.tangent, 0.0f),
+        tangC(vc.tangent, 0.0f);
+
     a = modelMat * a;
     b = modelMat * b;
     c = modelMat * c;
@@ -102,6 +106,10 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
     na = glm::normalize(na);
     nb = glm::normalize(nb);
     nc = glm::normalize(nc);
+
+    tangA = glm::normalize(modelMat * tangA);
+    tangB = glm::normalize(modelMat * tangB);
+    tangC = glm::normalize(modelMat * tangC);
 
     a = viewMat * a;
     b = viewMat * b;
@@ -122,6 +130,14 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
     va.posView = a;
     vb.posView = b;
     vc.posView = c;
+
+    tangA = glm::normalize(viewMat * tangA);
+    tangB = glm::normalize(viewMat * tangB);
+    tangC = glm::normalize(viewMat * tangC);
+
+    va.tangent = tangA;
+    vb.tangent = tangB;
+    vc.tangent = tangC;
 
     float brightness = 1.0f;
 
@@ -475,6 +491,9 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
                             const float brightness)
 {
     const float z = Interpolate(br, va.v.z, vb.v.z, vc.v.z);
+    const glm::vec3 n = InterpolateNormals(br, va.n, vb.n, vc.n),
+        tangent = InterpolateNormals(br, va.tangent, vb.tangent, vc.tangent);
+
     glm::vec2 t;
 
     if (perspectiveCorrection)
@@ -498,18 +517,32 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
         pCol = Color::mul(pCol, brightness);
         break;
 
-    case Smooth:
-        const glm::vec3 n = InterpolateNormals(br, va.n, vb.n, vc.n),
-            posView = Interpolate(br, va.posView, vb.posView, vc.posView);
+    case SmoothN1:
+        pCol = Color::mul(Color::white(),
+                          calcPhongShading(Interpolate(br, va.posView, vb.posView, vc.posView), n));
+        break;
 
-        const float l = calcPhongShading(posView, n);
+    case SmoothN2:
+        pCol = Color::mul(Color::white(),
+                          calcPhongShading(Interpolate(br, va.posView, vb.posView, vc.posView),
+                                           calcNormal(n, tangent, t)));
+        break;
+
+    case Spec:
+        pCol = Color::mul(texSpecular->getCol(t.x, t.y),
+                          calcPhongShading(Interpolate(br, va.posView, vb.posView, vc.posView),
+                                           calcNormal(n, tangent, t)));
+        break;
+
+    case Smooth:
+        const glm::vec3 posView = Interpolate(br, va.posView, vb.posView, vc.posView);
+
+        const float l = calcPhongShading(posView, calcNormal(n, tangent, t));
         const Color cSpec = Color::mul(texSpecular->getCol(t.x, t.y), l);
 
         pCol = Color::combine(pCol, cSpec);
         break;
     }
-
-
 
     setPixel(x, y, z, pCol);
 }
@@ -640,6 +673,16 @@ void Renderer::LoadSpecular(const std::string& filename)
     texSpecular = new Texture("specular" + filename + ".png");
 }
 
+void Renderer::LoadNormal(const std::string& filename)
+{
+    if (texNormal != nullptr)
+    {
+        delete texNormal;
+    }
+
+    texNormal = new Texture("normal" + filename + ".png");
+}
+
 int Renderer::index(int i, int j) const
 {
     return i * width + j;
@@ -650,6 +693,19 @@ float Renderer::calcLighting(const glm::vec3 n)
     const float res = glm::dot(lightVecView, -n);
 
     return std::clamp(res, 0.0f, 1.0f);
+}
+
+glm::vec3 Renderer::calcNormal(const glm::vec3 n, glm::vec3 tangent, const glm::vec2 t)
+{
+    tangent = glm::normalize(tangent - glm::dot(tangent, n) * n);
+    const glm::vec3 bitangent = glm::cross(tangent, n);
+    glm::vec3 mapNormal = texNormal->getNormal(t.x, t.y);
+
+    const glm::mat3 tbn(tangent, bitangent, n);
+
+    mapNormal = glm::normalize(tbn * mapNormal);
+
+    return mapNormal;
 }
 
 float Renderer::calcPhongShading(const glm::vec3 p, const glm::vec3 n)

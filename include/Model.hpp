@@ -11,7 +11,7 @@ class Model
     public:
         Model(const std::string& filename);
 
-        std::vector<glm::vec3> vertices, normals;
+        std::vector<glm::vec3> vertices, normals, tangents;
         std::vector<glm::vec2> uvs;
         std::vector<Face> faces;
 
@@ -25,4 +25,5 @@ class Model
         void loadNormal(std::ifstream& file);
         void adjustIndices();
         void centerModel();
+        void calcTangents();
 };

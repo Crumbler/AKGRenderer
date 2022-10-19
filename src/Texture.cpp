@@ -35,3 +35,22 @@ Color Texture::getCol(float x, float y)
 
     return Color(data[ind], data[ind + 1], data[ind + 2]);
 }
+
+glm::vec3 Texture::getNormal(float x, float y)
+{
+    x = std::clamp(x, 0.0f, 1.0f);
+    y = std::clamp(y, 0.0f, 1.0f);
+
+    const int newX = round(x * (width - 1)),
+        newY = round(y * (height - 1));
+
+    const int ind = (newY * width + newX) * 3;
+
+    glm::vec3 n(data[ind], data[ind + 1], data[ind + 2]);
+
+    n = (n * 2.0f) / 255.0f;
+
+    n -= 1.0f;
+
+    return glm::normalize(n);
+}
