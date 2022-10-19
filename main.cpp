@@ -93,11 +93,17 @@ void GUI_Main(GLFWwindow *window)
 
     ImGui::SameLine();
 
+    static char modelName[16] = "";
+
     if (ImGui::Button("Load model"))
     {
-        renderer.LoadModel("model.obj");
-        renderer.LoadDiffuse("diffuse.png");
+        renderer.LoadModel(modelName);
+        renderer.LoadDiffuse(modelName);
     }
+
+    ImGui::SameLine();
+
+    ImGui::InputTextWithHint("Input model name", "Model name", modelName, IM_ARRAYSIZE(modelName));
 
     ImGui::SliderFloat("FOV", &renderer.FOV, 0.0f, 180.0f);
 
@@ -112,6 +118,8 @@ void GUI_Main(GLFWwindow *window)
     ImGui::SliderFloat3("Model scale", &renderer.modelScale.x, 0.02f, 1.0f);
 
     ImGui::Checkbox("Backface culling", &renderer.backfaceCulling);
+
+    ImGui::Checkbox("Perspective correction", &renderer.perspectiveCorrection);
 
     ImGui::Text("Shading:");
     ImGui::SameLine();

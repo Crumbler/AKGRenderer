@@ -28,6 +28,8 @@ Renderer::Renderer()
     shading = None;
 
     texDiffuse = nullptr;
+
+    perspectiveCorrection = true;
 }
 
 const void* Renderer::Render(int width, int height, bool sizeChanged)
@@ -469,8 +471,17 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
                             const Color col)
 {
     const float z = Interpolate(br, va.v.z, vb.v.z, vc.v.z);
-    const float dv = Interpolate(br, 1.0f / va.posView.z, 1.0f / vb.posView.z, 1.0f / vc.posView.z);
-    const glm::vec2 t = Interpolate(br, va.t / va.posView.z, vb.t / vb.posView.z, vc.t / vc.posView.z) / dv;
+    glm::vec2 t;
+
+    if (perspectiveCorrection)
+    {
+        const float dv = Interpolate(br, 1.0f / va.posView.z, 1.0f / vb.posView.z, 1.0f / vc.posView.z);
+        t = Interpolate(br, va.t / va.posView.z, vb.t / vb.posView.z, vc.t / vc.posView.z) / dv;
+    }
+    else
+    {
+        t = Interpolate(br, va.t, vb.t, vc.t);
+    }
 
     Color pCol = texDiffuse->getCol(t.x, t.y);
 
@@ -589,7 +600,7 @@ void Renderer::LoadModel(const std::string& filename)
         delete model;
     }
 
-    model = new Model(filename);
+    model = new Model("model" + filename + ".obj");
 }
 
 void Renderer::LoadDiffuse(const std::string& filename)
@@ -599,7 +610,7 @@ void Renderer::LoadDiffuse(const std::string& filename)
         delete texDiffuse;
     }
 
-    texDiffuse = new Texture("diffuse.png");
+    texDiffuse = new Texture("diffuse" + filename + ".png");
 }
 
 int Renderer::index(int i, int j) const

@@ -17,7 +17,7 @@ class Renderer
         void LoadDiffuse(const std::string& filename);
 
         float FOV, ambientFactor, lambertFactor, spec1, spec2;
-        bool backfaceCulling;
+        bool backfaceCulling, perspectiveCorrection;
         glm::vec3 camPos, modelScale,
             modelPos, modelRot;
 
