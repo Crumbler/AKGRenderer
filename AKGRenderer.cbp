@@ -119,6 +119,7 @@
 			<Option virtualFolder="OpenGL Headers/" />
 		</Unit>
 		<Unit filename="include/Model.hpp" />
+		<Unit filename="include/NormalTexture.hpp" />
 		<Unit filename="include/Renderer.hpp" />
 		<Unit filename="include/ShaderInfo.hpp">
 			<Option virtualFolder="OpenGL Headers/" />
@@ -155,6 +156,7 @@
 			<Option virtualFolder="OpenGL Sources/" />
 		</Unit>
 		<Unit filename="src/Model.cpp" />
+		<Unit filename="src/NormalTexture.cpp" />
 		<Unit filename="src/Renderer.cpp" />
 		<Unit filename="src/ShaderProgram.cpp">
 			<Option virtualFolder="OpenGL Sources/" />

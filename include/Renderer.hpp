@@ -5,6 +5,7 @@
 #include "Vertex.hpp"
 #include "Shading.hpp"
 #include "Texture.hpp"
+#include "NormalTexture.hpp"
 #include <string>
 
 class Renderer
@@ -58,5 +59,6 @@ class Renderer
         int width, height, culledFaces;
         constexpr static float zNear = 0.1f, zFar = 100.0f;
         Model *model;
-        Texture *texDiffuse, *texSpecular, *texNormal;
+        Texture *texDiffuse, *texSpecular;
+        NormalTexture *texNormal;
 };

@@ -663,7 +663,7 @@ void Renderer::LoadNormal(const std::string& filename)
         delete texNormal;
     }
 
-    texNormal = new Texture("normal" + filename + ".png");
+    texNormal = new NormalTexture("normal" + filename + ".png");
 }
 
 int Renderer::index(int i, int j) const
