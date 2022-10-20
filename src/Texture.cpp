@@ -3,6 +3,7 @@
 #include <cstdio>
 #include "lodepng.h"
 #include <algorithm>
+#include "Utils.hpp"
 
 Texture::Texture(const std::string& filename)
 {
@@ -25,6 +26,9 @@ Texture::Texture(const std::string& filename)
 
 Color Texture::getCol(float x, float y)
 {
+    using glm::vec2;
+    using glm::clamp;
+
     x = std::clamp(x, 0.0f, 1.0f);
     y = std::clamp(y, 0.0f, 1.0f);
 

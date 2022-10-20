@@ -268,6 +268,8 @@ void Model::loadTextureCoords(std::ifstream& file)
 
     file >> t.x >> t.y;
 
+    t.y = 1.0f - t.y;
+
     uvs.push_back(t);
 }
 

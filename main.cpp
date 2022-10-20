@@ -135,18 +135,13 @@ void GUI_Main(GLFWwindow *window)
     ImGui::RadioButton("Flat", (int*)&renderer.shading, (int)Flat);
     ImGui::SameLine();
     ImGui::RadioButton("Smooth", (int*)&renderer.shading, (int)Smooth);
-    ImGui::RadioButton("SmoothN1", (int*)&renderer.shading, (int)SmoothN1);
-    ImGui::SameLine();
-    ImGui::RadioButton("SmoothN2", (int*)&renderer.shading, (int)SmoothN2);
-    ImGui::SameLine();
-    ImGui::RadioButton("Spec", (int*)&renderer.shading, (int)Spec);
 
     if (renderer.shading != None)
     {
         ImGui::SliderFloat("Ambient", &renderer.ambientFactor, 0.0f, 1.0f);
     }
 
-    if (renderer.shading >= Smooth)
+    if (renderer.shading == Smooth)
     {
         ImGui::SliderFloat("Lambert factor", &renderer.lambertFactor, 0.0f, 1.0f);
         ImGui::SliderFloat("Spec 1", &renderer.spec1, 0.0f, 60.0f);

@@ -517,23 +517,6 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
         pCol = Color::mul(pCol, brightness);
         break;
 
-    case SmoothN1:
-        pCol = Color::mul(Color::white(),
-                          calcPhongShading(Interpolate(br, va.posView, vb.posView, vc.posView), n));
-        break;
-
-    case SmoothN2:
-        pCol = Color::mul(Color::white(),
-                          calcPhongShading(Interpolate(br, va.posView, vb.posView, vc.posView),
-                                           calcNormal(n, tangent, t)));
-        break;
-
-    case Spec:
-        pCol = Color::mul(texSpecular->getCol(t.x, t.y),
-                          calcPhongShading(Interpolate(br, va.posView, vb.posView, vc.posView),
-                                           calcNormal(n, tangent, t)));
-        break;
-
     case Smooth:
         const glm::vec3 posView = Interpolate(br, va.posView, vb.posView, vc.posView);
 
