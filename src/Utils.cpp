@@ -2,15 +2,7 @@
 
 #include <windows.h>
 
-std::string Utils::getCurrDir()
+float Utils::perpDotProduct(const glm::vec2 a, const glm::vec2 b)
 {
-    char *buf = new char[512];
-
-    GetCurrentDirectoryA(512, buf);
-
-    std::string s(buf);
-
-    delete[] buf;
-
-    return s;
+    return a.x * b.y - a.y * b.x;
 }

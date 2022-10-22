@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
+#include <glm/glm.hpp>
 
 class Utils
 {
 public:
-    static std::string getCurrDir();
+    static float perpDotProduct(const glm::vec2 a, const glm::vec2 b);
 };

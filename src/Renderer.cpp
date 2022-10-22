@@ -1,4 +1,5 @@
 #include "Renderer.hpp"
+#include "Utils.hpp"
 
 #include <cstring>
 #include <cmath>
@@ -150,12 +151,6 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
         brightness = std::clamp((l1 + l2 + l3) / 3.0f + ambientFactor, 0.0f, 1.0f);
     }
 
-    if (backfaceCulling && canCull(a, b, c))
-    {
-        ++culledFaces;
-        return;
-    }
-
     a = projMat * a;
     b = projMat * b;
     c = projMat * c;
@@ -164,6 +159,12 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
         b.z < Renderer::zNear || b.z > Renderer::zFar ||
         c.z < Renderer::zNear || c.z > Renderer::zFar)
     {
+        return;
+    }
+
+    if (backfaceCulling && canCull(a, b, c))
+    {
+        ++culledFaces;
         return;
     }
 
@@ -721,9 +722,9 @@ glm::vec3 Renderer::InterpolateNormals(const glm::vec3 br, const glm::vec3 a, co
     return glm::normalize(a * br.x + b * br.y + c * br.z);
 }
 
-bool Renderer::canCull(const glm::vec3 a, const glm::vec3 b, const glm::vec3 c)
+bool Renderer::canCull(const glm::vec2 a, const glm::vec2 b, const glm::vec2 c)
 {
-    const float cull = glm::dot(glm::cross(b - a, c - a), a);
+    const float cull = Utils::perpDotProduct(b - a, c - a);
 
-    return cull >= 0.0f;
+    return cull <= 0.0f;
 }

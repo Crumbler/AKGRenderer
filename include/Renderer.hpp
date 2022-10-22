@@ -42,7 +42,7 @@ class Renderer
         void setPixel(const int x, const int y, const float z, const Color c);
         template<typename T> static T Interpolate(const glm::vec3 br, const T a, const T b, const T c);
         static glm::vec3 InterpolateNormals(const glm::vec3 br, const glm::vec3 a, const glm::vec3 b, const glm::vec3 c);
-        static bool canCull(const glm::vec3 a, const glm::vec3 b, const glm::vec3 c);
+        static bool canCull(const glm::vec2 a, const glm::vec2 b, const glm::vec2 c);
         void genProjectionMatrix();
         void genViewportMatrix();
         void genViewMatrix();
