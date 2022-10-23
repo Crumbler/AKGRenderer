@@ -24,7 +24,7 @@ Texture::Texture(const std::string& filename)
     printf("width: %d height: %d\n", width, height);
 }
 
-Color Texture::getCol(float x, float y)
+glm::vec3 Texture::getCol(float x, float y)
 {
     using glm::vec2;
     using glm::clamp;
@@ -37,5 +37,5 @@ Color Texture::getCol(float x, float y)
 
     const int ind = (newY * width + newX) * 3;
 
-    return Color(data[ind], data[ind + 1], data[ind + 2]);
+    return glm::vec3(data[ind], data[ind + 1], data[ind + 2]) / 255.0f;
 }

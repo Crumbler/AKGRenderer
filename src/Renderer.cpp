@@ -61,7 +61,7 @@ const void* Renderer::Render(int width, int height, bool sizeChanged)
 
     if (sizeChanged || buffer == nullptr)
     {
-        buffer = (Color*)new char[width * height * 3];
+        buffer = new uint8_t[width * height * 3];
         zBuffer = new float[width * height];
     }
 
@@ -507,7 +507,7 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
         t = Interpolate(br, va.t, vb.t, vc.t);
     }
 
-    Color pCol = texDiffuse->getCol(t.x, t.y);
+    glm::vec3 pCol = texDiffuse->getCol(t.x, t.y);
 
     switch (shading)
     {
@@ -515,23 +515,23 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
         break;
 
     case Flat:
-        pCol = Color::mul(pCol, brightness);
+        pCol *= brightness;
         break;
 
     case Smooth:
         const glm::vec3 posView = Interpolate(br, va.posView, vb.posView, vc.posView);
 
         const float l = calcPhongShading(posView, calcNormal(n, tangent, t));
-        const Color cSpec = Color::mul(texSpecular->getCol(t.x, t.y), l);
+        const glm::vec3 cSpec = texSpecular->getCol(t.x, t.y) * l;
 
-        pCol = Color::combine(pCol, cSpec);
+        pCol += cSpec;
         break;
     }
 
     setPixel(x, y, z, pCol);
 }
 
-void Renderer::setPixel(const int x, const int y, const float z, const Color c)
+void Renderer::setPixel(const int x, const int y, const float z, glm::vec3 c)
 {
     if (x < 0 || x >= width || y < 0 || y >= height)
     {
@@ -543,7 +543,16 @@ void Renderer::setPixel(const int x, const int y, const float z, const Color c)
     if (zBuffer[ind] > z)
     {
         zBuffer[ind] = z;
-        buffer[ind] = c;
+
+        c.x = std::pow(c.x, 1.0f / 2.2f);
+        c.y = std::pow(c.y, 1.0f / 2.2f);
+        c.z = std::pow(c.z, 1.0f / 2.2f);
+
+        c = glm::min(glm::vec3(1.0f), c);
+
+        buffer[ind * 3] = std::round(c.x * 255.0f);
+        buffer[ind * 3 + 1] = std::round(c.y * 255.0f);
+        buffer[ind * 3 + 2] = std::round(c.z * 255.0f);
     }
 }
 

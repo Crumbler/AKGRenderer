@@ -23,7 +23,7 @@ NormalTexture::NormalTexture(const std::string& filename)
 
     printf("width: %d height: %d\n", width, height);
 
-    for (int i = 0; i < data.size(); i += 3)
+    for (std::size_t i = 0; i < data.size(); i += 3)
     {
         glm::vec3 n(data[i], data[i + 1], data[i + 2]);
         n = glm::normalize(n * 2.0f / 255.0f - 1.0f);

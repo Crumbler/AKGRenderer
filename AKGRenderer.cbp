@@ -101,7 +101,6 @@
 		<Unit filename="imgui/imstb_truetype.h">
 			<Option virtualFolder="ImGui/" />
 		</Unit>
-		<Unit filename="include/Color.hpp" />
 		<Unit filename="include/DisplayShader.hpp">
 			<Option virtualFolder="OpenGL Headers/" />
 		</Unit>
