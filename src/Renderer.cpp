@@ -521,7 +521,7 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
     case Smooth:
         const glm::vec3 posView = Interpolate(br, va.posView, vb.posView, vc.posView);
 
-        const glm::vec3 l = calcPhongShading(posView, calcNormal(n, tangent, t));
+        const glm::vec3 l = calcBlinnPhongShading(posView, calcNormal(n, tangent, t));
         const glm::vec3 cSpec = texSpecular->getCol(t.x, t.y) * l.z;
 
         pCol = pCol * (l.x + l.y) + cSpec;
@@ -701,15 +701,14 @@ glm::vec3 Renderer::calcNormal(const glm::vec3 n, glm::vec3 tangent, const glm::
     return mapNormal;
 }
 
-glm::vec3 Renderer::calcPhongShading(const glm::vec3 p, const glm::vec3 n)
+glm::vec3 Renderer::calcBlinnPhongShading(const glm::vec3 p, const glm::vec3 n)
 {
     const float l1 = glm::dot(lightVecView, -n) * lambertFactor,
         l2 = ambientFactor;
 
-    const glm::vec3 eyeDir = glm::normalize(p),
-        reflRay = glm::reflect(lightVecView, n);
+    const glm::vec3 eyeDir = glm::normalize(p);
 
-    float kSp = -glm::dot(eyeDir, reflRay);
+    float kSp = -glm::dot(n, glm::normalize(eyeDir + lightVecView));
 
     kSp = std::max(0.0f, kSp);
 
