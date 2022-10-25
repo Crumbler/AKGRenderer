@@ -521,10 +521,10 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
     case Smooth:
         const glm::vec3 posView = Interpolate(br, va.posView, vb.posView, vc.posView);
 
-        const float l = calcPhongShading(posView, calcNormal(n, tangent, t));
-        const glm::vec3 cSpec = texSpecular->getCol(t.x, t.y) * l;
+        const glm::vec3 l = calcPhongShading(posView, calcNormal(n, tangent, t));
+        const glm::vec3 cSpec = texSpecular->getCol(t.x, t.y) * l.z;
 
-        pCol += cSpec;
+        pCol = pCol * (l.x + l.y) + cSpec;
         break;
     }
 
@@ -701,7 +701,7 @@ glm::vec3 Renderer::calcNormal(const glm::vec3 n, glm::vec3 tangent, const glm::
     return mapNormal;
 }
 
-float Renderer::calcPhongShading(const glm::vec3 p, const glm::vec3 n)
+glm::vec3 Renderer::calcPhongShading(const glm::vec3 p, const glm::vec3 n)
 {
     const float l1 = glm::dot(lightVecView, -n) * lambertFactor,
         l2 = ambientFactor;
@@ -713,11 +713,9 @@ float Renderer::calcPhongShading(const glm::vec3 p, const glm::vec3 n)
 
     kSp = std::max(0.0f, kSp);
 
-    kSp = std::pow(kSp, spec1);
+    kSp = std::pow(kSp, spec1) * spec2;
 
-    kSp *= spec2;
-
-    return std::clamp(l1 + l2 + kSp, 0.0f, 1.0f);
+    return glm::vec3(l2, std::max(0.0f, l1), kSp);
 }
 
 template<typename T>

@@ -49,7 +49,7 @@ class Renderer
         void genLightVec();
         float calcLighting(const glm::vec3 n);
         glm::vec3 calcNormal(const glm::vec3 n, glm::vec3 tangent, const glm::vec2 t);
-        float calcPhongShading(const glm::vec3 p, const glm::vec3 n);
+        glm::vec3 calcPhongShading(const glm::vec3 p, const glm::vec3 n);
 
         glm::mat4 modelMat, viewMat, projMat, viewportMat;
         glm::vec3 lightVec, lightVecView;
