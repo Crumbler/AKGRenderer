@@ -18,10 +18,18 @@ NormalTexture::NormalTexture(const std::string& filename)
     }
     else
     {
-        printf("Failed to load texture:\n");
+        printf("Failed to load texture:\nUsing default normal map\n");
+
+        width = 1;
+        height = 1;
+
+        data.resize(3);
+        data[0] = 0;
+        data[1] = 0;
+        data[2] = 255;
     }
 
-    printf("width: %d height: %d\n", width, height);
+    printf("width: %d height: %d\n\n", width, height);
 
     for (std::size_t i = 0; i < data.size(); i += 3)
     {

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "Utils.hpp"
 
-Texture::Texture(const std::string& filename)
+Texture::Texture(const std::string& filename, TextureType type)
 {
     width = 0;
     height = 0;
@@ -19,9 +19,33 @@ Texture::Texture(const std::string& filename)
     else
     {
         printf("Failed to load texture:\n");
+
+        switch (type)
+        {
+        case Diffuse:
+            printf("Using default diffuse map\n");
+
+            width = 1;
+            height = 1;
+
+            data = std::vector<unsigned char>(3, 255);
+            break;
+
+        case Specular:
+            printf("Using default specular map\n");
+
+            width = 1;
+            height = 1;
+
+            data = std::vector<unsigned char>(3, 0);
+            break;
+
+        default:
+            break;
+        }
     }
 
-    printf("width: %d height: %d\n", width, height);
+    printf("width: %d height: %d\n\n", width, height);
 }
 
 glm::vec3 Texture::getCol(float x, float y)

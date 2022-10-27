@@ -1,5 +1,6 @@
 #include "Renderer.hpp"
 #include "Utils.hpp"
+#include "TextureType.hpp"
 
 #include <cstring>
 #include <cmath>
@@ -653,7 +654,7 @@ void Renderer::LoadDiffuse(const std::string& filename)
         delete texDiffuse;
     }
 
-    texDiffuse = new Texture("diffuse" + filename + ".png");
+    texDiffuse = new Texture("diffuse" + filename + ".png", Diffuse);
 }
 
 void Renderer::LoadSpecular(const std::string& filename)
@@ -663,7 +664,7 @@ void Renderer::LoadSpecular(const std::string& filename)
         delete texSpecular;
     }
 
-    texSpecular = new Texture("specular" + filename + ".png");
+    texSpecular = new Texture("specular" + filename + ".png", Specular);
 }
 
 void Renderer::LoadNormal(const std::string& filename)
