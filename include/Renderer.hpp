@@ -54,7 +54,7 @@ class Renderer
         void genLightVec();
         glm::vec3 calcNormal(const glm::vec3 n, glm::vec3 tangent, const glm::vec2 t);
         glm::vec3 calcBlinnPhongShading(const glm::vec3 p, const glm::vec3 n);
-        glm::vec3 getPBR(const glm::vec3 n, const glm::vec3 pos, glm::vec3 albedo,
+        glm::vec3 getPBR(glm::vec3 n, glm::vec3 pos, glm::vec3 albedo,
                          float metallic, float roughness, float ao, glm::vec3 emission);
 
         glm::mat4 modelMat, viewMat, projMat, viewportMat;

@@ -740,11 +740,11 @@ glm::vec3 Renderer::calcBlinnPhongShading(const glm::vec3 p, const glm::vec3 n)
     return glm::vec3(l2, std::max(0.0f, l1), kSp);
 }
 
-glm::vec3 Renderer::getPBR(const glm::vec3 n, const glm::vec3 pos, glm::vec3 albedo,
+glm::vec3 Renderer::getPBR(glm::vec3 n, glm::vec3 pos, glm::vec3 albedo,
                            float metallic, float roughness, float ao,
                            glm::vec3 emission)
 {
-
+    albedo = glm::pow(albedo, glm::vec3(2.2f));
     const glm::vec3 l = -lightVecView,
         v = glm::normalize(-pos),
         h = glm::normalize(v + l),
@@ -769,6 +769,7 @@ glm::vec3 Renderer::getPBR(const glm::vec3 n, const glm::vec3 pos, glm::vec3 alb
 
     glm::vec3 color = ambient + Lo;
 
+    color = color / (color + 1.0f);
     color = glm::pow(color, glm::vec3(1.0f / 2.2f));
 
     return color;

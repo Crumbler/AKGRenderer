@@ -35,7 +35,7 @@ MonoTexture::MonoTexture(const std::string& filename, TextureType type)
             width = 1;
             height = 1;
 
-            data = std::vector<unsigned char>(1, 255);
+            data = std::vector<unsigned char>(1, 0);
             break;
 
         case Metallic:
