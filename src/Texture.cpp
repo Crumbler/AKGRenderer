@@ -37,6 +37,15 @@ Texture::Texture(const std::string& filename, TextureType type)
             width = 1;
             height = 1;
 
+            data = std::vector<unsigned char>(3, 255);
+            break;
+
+        case Emission:
+            printf("Using default emission map\n");
+
+            width = 1;
+            height = 1;
+
             data = std::vector<unsigned char>(3, 0);
             break;
 

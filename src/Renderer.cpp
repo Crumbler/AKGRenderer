@@ -141,17 +141,6 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
     vb.tangent = tangB;
     vc.tangent = tangC;
 
-    float brightness = 1.0f;
-
-    if (shading == Flat)
-    {
-        const float l1 = calcLighting(na),
-            l2 = calcLighting(nb),
-            l3 = calcLighting(nc);
-
-        brightness = std::clamp((l1 + l2 + l3) / 3.0f + ambientFactor, 0.0f, 1.0f);
-    }
-
     a = projMat * a;
     b = projMat * b;
     c = projMat * c;
@@ -203,7 +192,7 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
         {
             swap(va, vb);
         }
-        drawBottomTriangle(va, vb, vc, brightness);
+        drawBottomTriangle(va, vb, vc);
     }
     else if (vb.v.y == vc.v.y)
     {
@@ -212,7 +201,7 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
         {
             swap(vb, vc);
         }
-        drawTopTriangle(va, vb, vc, brightness);
+        drawTopTriangle(va, vb, vc);
     }
     else // general triangle
     {
@@ -222,17 +211,17 @@ void Renderer::drawTriangle(Vertex va, Vertex vb, Vertex vc)
         if (vb.v.x < newX)
         {
             // left triangle
-            drawLeftTriangle(va, vb, vc, brightness);
+            drawLeftTriangle(va, vb, vc);
         }
         else
         {
             // right triangle
-            drawRightTriangle(va, vb, vc, brightness);
+            drawRightTriangle(va, vb, vc);
         }
     }
 }
 
-void Renderer::drawLeftTriangle(Vertex va, Vertex vb, Vertex vc, const float brightness)
+void Renderer::drawLeftTriangle(Vertex va, Vertex vb, Vertex vc)
 {
     const glm::vec3& a = va.v,
         b = vb.v,
@@ -267,7 +256,7 @@ void Renderer::drawLeftTriangle(Vertex va, Vertex vb, Vertex vc, const float bri
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            drawFragment(br, x, y, va, vb, vc, brightness);
+            drawFragment(br, x, y, va, vb, vc);
 
             br += brScanStep;
         }
@@ -305,7 +294,7 @@ void Renderer::drawLeftTriangle(Vertex va, Vertex vb, Vertex vc, const float bri
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            drawFragment(br, x, y, va, vb, vc, brightness);
+            drawFragment(br, x, y, va, vb, vc);
 
             br += brScanStep;
         }
@@ -315,7 +304,7 @@ void Renderer::drawLeftTriangle(Vertex va, Vertex vb, Vertex vc, const float bri
     }
 }
 
-void Renderer::drawRightTriangle(Vertex va, Vertex vb, Vertex vc, const float brightness)
+void Renderer::drawRightTriangle(Vertex va, Vertex vb, Vertex vc)
 {
     const glm::vec3& a = va.v,
         b = vb.v,
@@ -350,7 +339,7 @@ void Renderer::drawRightTriangle(Vertex va, Vertex vb, Vertex vc, const float br
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            drawFragment(br, x, y, va, vb, vc, brightness);
+            drawFragment(br, x, y, va, vb, vc);
 
             br += brScanStep;
         }
@@ -388,7 +377,7 @@ void Renderer::drawRightTriangle(Vertex va, Vertex vb, Vertex vc, const float br
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            drawFragment(br, x, y, va, vb, vc, brightness);
+            drawFragment(br, x, y, va, vb, vc);
 
             br += brScanStep;
         }
@@ -398,7 +387,7 @@ void Renderer::drawRightTriangle(Vertex va, Vertex vb, Vertex vc, const float br
     }
 }
 
-void Renderer::drawTopTriangle(Vertex va, Vertex vb, Vertex vc, const float brightness)
+void Renderer::drawTopTriangle(Vertex va, Vertex vb, Vertex vc)
 {
     const glm::vec3& a = va.v,
         b = vb.v,
@@ -433,7 +422,7 @@ void Renderer::drawTopTriangle(Vertex va, Vertex vb, Vertex vc, const float brig
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            drawFragment(br, x, y, va, vb, vc, brightness);
+            drawFragment(br, x, y, va, vb, vc);
 
             br += brScanStep;
         }
@@ -443,7 +432,7 @@ void Renderer::drawTopTriangle(Vertex va, Vertex vb, Vertex vc, const float brig
     }
 }
 
-void Renderer::drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, const float brightness)
+void Renderer::drawBottomTriangle(Vertex va, Vertex vb, Vertex vc)
 {
     const glm::vec3& a = va.v,
         b = vb.v,
@@ -478,7 +467,7 @@ void Renderer::drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, const float b
 
         for (int x = xStart; x < xEnd; ++x)
         {
-            drawFragment(br, x, y, va, vb, vc, brightness);
+            drawFragment(br, x, y, va, vb, vc);
 
             br += brScanStep;
         }
@@ -489,12 +478,12 @@ void Renderer::drawBottomTriangle(Vertex va, Vertex vb, Vertex vc, const float b
 }
 
 void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
-                            const Vertex va, const Vertex vb, const Vertex vc,
-                            const float brightness)
+                            const Vertex va, const Vertex vb, const Vertex vc)
 {
     const float z = Interpolate(br, va.v.z, vb.v.z, vc.v.z);
-    const glm::vec3 n = InterpolateNormals(br, va.n, vb.n, vc.n),
+    glm::vec3 n = InterpolateNormals(br, va.n, vb.n, vc.n),
         tangent = InterpolateNormals(br, va.tangent, vb.tangent, vc.tangent);
+    const glm::vec3 posView = Interpolate(br, va.posView, vb.posView, vc.posView);
 
     glm::vec2 t;
 
@@ -508,24 +497,28 @@ void Renderer::drawFragment(const glm::vec3 br, const int x, const int y,
         t = Interpolate(br, va.t, vb.t, vc.t);
     }
 
-    glm::vec3 pCol = texDiffuse->getCol(t.x, t.y);
+    glm::vec3 baseCol = texDiffuse->getCol(t.x, t.y),
+        pCol;
+
+    n = calcNormal(n, tangent, t);
 
     switch (shading)
     {
     case None:
+        pCol = baseCol;
         break;
 
-    case Flat:
-        pCol *= brightness;
+    case PBR:
+        pCol = getPBR(n, posView, baseCol, texMetallic->getVal(t.x, t.y),
+                      texRoughness->getVal(t.x, t.y), texAO->getVal(t.x, t.y),
+                      texEmission->getCol(t.x, t.y));
         break;
 
     case Smooth:
-        const glm::vec3 posView = Interpolate(br, va.posView, vb.posView, vc.posView);
+        const glm::vec3 bps = calcBlinnPhongShading(posView, n);
+        const glm::vec3 cSpec = texSpecular->getCol(t.x, t.y) * bps.z;
 
-        const glm::vec3 l = calcBlinnPhongShading(posView, calcNormal(n, tangent, t));
-        const glm::vec3 cSpec = texSpecular->getCol(t.x, t.y) * l.z;
-
-        pCol = pCol * (l.x + l.y) + cSpec;
+        pCol = baseCol * (bps.x + bps.y) + cSpec;
         break;
     }
 
@@ -544,10 +537,6 @@ void Renderer::setPixel(const int x, const int y, const float z, glm::vec3 c)
     if (zBuffer[ind] > z)
     {
         zBuffer[ind] = z;
-
-        c.x = std::pow(c.x, 1.0f / 2.2f);
-        c.y = std::pow(c.y, 1.0f / 2.2f);
-        c.z = std::pow(c.z, 1.0f / 2.2f);
 
         c = glm::min(glm::vec3(1.0f), c);
 
@@ -677,16 +666,49 @@ void Renderer::LoadNormal(const std::string& filename)
     texNormal = new NormalTexture("normal" + filename + ".png");
 }
 
+void Renderer::LoadEmission(const std::string& filename)
+{
+    if (texEmission != nullptr)
+    {
+        delete texEmission;
+    }
+
+    texEmission = new Texture("emission" + filename + ".png", Emission);
+}
+
+void Renderer::LoadMetallic(const std::string& filename)
+{
+    if (texMetallic != nullptr)
+    {
+        delete texMetallic;
+    }
+
+    texMetallic = new MonoTexture("metallic" + filename + ".png", Metallic);
+}
+
+void Renderer::LoadRoughness(const std::string& filename)
+{
+    if (texRoughness != nullptr)
+    {
+        delete texRoughness;
+    }
+
+    texRoughness = new MonoTexture("roughness" + filename + ".png", Roughness);
+}
+
+void Renderer::LoadAO(const std::string& filename)
+{
+    if (texAO != nullptr)
+    {
+        delete texAO;
+    }
+
+    texAO = new MonoTexture("ao" + filename + ".png", Ambient);
+}
+
 int Renderer::index(int i, int j) const
 {
     return i * width + j;
-}
-
-float Renderer::calcLighting(const glm::vec3 n)
-{
-    const float res = glm::dot(lightVecView, -n);
-
-    return std::clamp(res, 0.0f, 1.0f);
 }
 
 glm::vec3 Renderer::calcNormal(const glm::vec3 n, glm::vec3 tangent, const glm::vec2 t)
@@ -716,6 +738,40 @@ glm::vec3 Renderer::calcBlinnPhongShading(const glm::vec3 p, const glm::vec3 n)
     kSp = std::pow(kSp, spec1) * spec2;
 
     return glm::vec3(l2, std::max(0.0f, l1), kSp);
+}
+
+glm::vec3 Renderer::getPBR(const glm::vec3 n, const glm::vec3 pos, glm::vec3 albedo,
+                           float metallic, float roughness, float ao,
+                           glm::vec3 emission)
+{
+
+    const glm::vec3 l = -lightVecView,
+        v = glm::normalize(-pos),
+        h = glm::normalize(v + l),
+        F0 = glm::mix(glm::vec3(0.04f), albedo, metallic),
+        F = Utils::FresnelSchlick(std::max(glm::dot(h, v), 0.0f), F0);
+
+    const float NDF = Utils::DistributionGGX(h, n, roughness),
+        G = Utils::GeometrySmith(n, v, l, roughness),
+        NdotL = std::max(glm::dot(n, l), 0.0f);
+
+    const glm::vec3 numerator = NDF * G * F;
+    float denominator = 4.0f * std::max(glm::dot(n, v), 0.0f) * NdotL;
+
+    denominator = std::max(denominator, 0.000001f);
+
+    const glm::vec3 specular = numerator / denominator;
+
+    const glm::vec3& kS = F;
+    const glm::vec3 kD = (1.0f - kS) * (1.0f - metallic),
+        Lo = emission + (kD * albedo / Utils::pi + specular) * NdotL,
+        ambient = glm::vec3(0.03f) * albedo * ao;
+
+    glm::vec3 color = ambient + Lo;
+
+    color = glm::pow(color, glm::vec3(1.0f / 2.2f));
+
+    return color;
 }
 
 template<typename T>

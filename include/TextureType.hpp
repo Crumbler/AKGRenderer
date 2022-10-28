@@ -4,5 +4,9 @@ enum TextureType
 {
     Diffuse,
     Specular,
-    Normal
+    Normal,
+    Emission,
+    Ambient,
+    Metallic,
+    Roughness
 };

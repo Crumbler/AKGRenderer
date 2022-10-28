@@ -3,6 +3,6 @@
 enum Shading : int
 {
     None,
-    Flat,
+    PBR,
     Smooth
 };
